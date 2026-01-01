@@ -1,0 +1,1194 @@
+{
+  "version": "1.0.0",
+  "tools": [
+    {
+      "name": "os.health_check",
+      "description": "Return backend, database, queue, and provider connectivity status.",
+      "input_schema": { "type": "object", "properties": {} },
+      "output_schema": {
+        "type": "object",
+        "required": ["status", "checks"],
+        "properties": {
+          "status": { "type": "string", "enum": ["ok", "degraded", "down"] },
+          "checks": { "type": "object" }
+        }
+      },
+      "permissions": ["read:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 8000,
+      "receipt_fields": ["result.status"]
+    },
+    {
+      "name": "os.get_state_snapshot",
+      "description": "Fetch the latest derived state snapshot for a domain.",
+      "input_schema": {
+        "type": "object",
+        "required": ["domain"],
+        "properties": {
+          "domain": { "type": "string", "enum": ["business", "personal", "both"] }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "required": ["domain", "as_of", "state"],
+        "properties": {
+          "domain": { "type": "string" },
+          "as_of": { "type": "string", "format": "date-time" },
+          "state": { "type": "object" }
+        }
+      },
+      "permissions": ["read:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 12000,
+      "receipt_fields": ["result.domain", "result.as_of"]
+    },
+    {
+      "name": "os.refresh_state_snapshot",
+      "description": "Recompute and persist a new derived state snapshot from recent events.",
+      "input_schema": {
+        "type": "object",
+        "required": ["domain"],
+        "properties": {
+          "domain": { "type": "string", "enum": ["business", "personal", "both"] },
+          "since": { "type": "string", "format": "date-time" }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "required": ["snapshot_id", "as_of"],
+        "properties": {
+          "snapshot_id": { "type": "string" },
+          "as_of": { "type": "string", "format": "date-time" }
+        }
+      },
+      "permissions": ["read:db", "write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 30000,
+      "receipt_fields": ["effects.db_writes", "result.snapshot_id"]
+    },
+    {
+      "name": "os.create_note",
+      "description": "Create a note (business/personal/both) and attach optional entity references.",
+      "input_schema": {
+        "type": "object",
+        "required": ["domain", "title", "content"],
+        "properties": {
+          "domain": { "type": "string", "enum": ["business", "personal", "both"] },
+          "title": { "type": "string", "maxLength": 140 },
+          "content": { "type": "string" },
+          "entity_refs": {
+            "type": "array",
+            "items": { "type": "object", "required": ["type", "id"], "properties": { "type": { "type": "string" }, "id": { "type": "string" } } }
+          }
+        }
+      },
+      "output_schema": { "type": "object", "required": ["note_id"], "properties": { "note_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "none" },
+      "timeout_ms": 12000,
+      "receipt_fields": ["effects.db_writes", "result.note_id"]
+    },
+    {
+      "name": "os.search_notes",
+      "description": "Search notes by keyword and optional domain/entity filters.",
+      "input_schema": {
+        "type": "object",
+        "required": ["query"],
+        "properties": {
+          "query": { "type": "string", "maxLength": 240 },
+          "domain": { "type": "string", "enum": ["business", "personal", "both"] },
+          "limit": { "type": "integer", "minimum": 1, "maximum": 50 }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "required": ["results"],
+        "properties": { "results": { "type": "array", "items": { "type": "object" } } }
+      },
+      "permissions": ["read:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 15000,
+      "receipt_fields": ["result.results"]
+    },
+    {
+      "name": "os.create_task",
+      "description": "Create a task with optional due date and linkage to business objects.",
+      "input_schema": {
+        "type": "object",
+        "required": ["title", "domain"],
+        "properties": {
+          "title": { "type": "string", "maxLength": 200 },
+          "domain": { "type": "string", "enum": ["business", "personal", "both"] },
+          "description": { "type": "string" },
+          "due_at": { "type": "string", "format": "date-time" },
+          "context_ref": { "type": "object", "properties": { "type": { "type": "string" }, "id": { "type": "string" } } },
+          "priority": { "type": "string", "enum": ["low", "normal", "high"] }
+        }
+      },
+      "output_schema": { "type": "object", "required": ["task_id"], "properties": { "task_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "none" },
+      "timeout_ms": 12000,
+      "receipt_fields": ["effects.db_writes", "result.task_id"]
+    },
+    {
+      "name": "os.update_task",
+      "description": "Update task fields (title, description, due date, priority).",
+      "input_schema": {
+        "type": "object",
+        "required": ["task_id"],
+        "properties": {
+          "task_id": { "type": "string" },
+          "patch": { "type": "object" }
+        }
+      },
+      "output_schema": { "type": "object", "required": ["task_id"], "properties": { "task_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 12000,
+      "receipt_fields": ["effects.db_writes", "result.task_id"]
+    },
+    {
+      "name": "os.complete_task",
+      "description": "Mark a task as completed with optional completion note.",
+      "input_schema": {
+        "type": "object",
+        "required": ["task_id"],
+        "properties": { "task_id": { "type": "string" }, "note": { "type": "string" } }
+      },
+      "output_schema": { "type": "object", "required": ["task_id"], "properties": { "task_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 10000,
+      "receipt_fields": ["effects.db_writes", "result.task_id"]
+    },
+    {
+      "name": "os.defer_task",
+      "description": "Defer a task by setting a new due date.",
+      "input_schema": {
+        "type": "object",
+        "required": ["task_id", "due_at"],
+        "properties": { "task_id": { "type": "string" }, "due_at": { "type": "string", "format": "date-time" }, "reason": { "type": "string" } }
+      },
+      "output_schema": { "type": "object", "required": ["task_id"], "properties": { "task_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 10000,
+      "receipt_fields": ["effects.db_writes", "result.task_id"]
+    },
+    {
+      "name": "os.list_tasks",
+      "description": "List tasks filtered by status/domain/context.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "enum": ["open", "done", "all"] },
+          "domain": { "type": "string", "enum": ["business", "personal", "both"] },
+          "limit": { "type": "integer", "minimum": 1, "maximum": 100 }
+        }
+      },
+      "output_schema": { "type": "object", "required": ["tasks"], "properties": { "tasks": { "type": "array", "items": { "type": "object" } } } },
+      "permissions": ["read:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 12000,
+      "receipt_fields": ["result.tasks"]
+    },
+    {
+      "name": "os.create_reminder",
+      "description": "Create a reminder (stored as task/reminder event) for a specific datetime.",
+      "input_schema": {
+        "type": "object",
+        "required": ["title", "remind_at"],
+        "properties": {
+          "title": { "type": "string", "maxLength": 200 },
+          "remind_at": { "type": "string", "format": "date-time" },
+          "domain": { "type": "string", "enum": ["business", "personal", "both"] },
+          "context_ref": { "type": "object", "properties": { "type": { "type": "string" }, "id": { "type": "string" } } }
+        }
+      },
+      "output_schema": { "type": "object", "required": ["reminder_id"], "properties": { "reminder_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "none" },
+      "timeout_ms": 12000,
+      "receipt_fields": ["effects.db_writes", "result.reminder_id"]
+    },
+    {
+      "name": "os.audit_log_search",
+      "description": "Search tool calls/receipts and events for audit and troubleshooting.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string" },
+          "event_type": { "type": "string" },
+          "call_id": { "type": "string" },
+          "since": { "type": "string", "format": "date-time" },
+          "limit": { "type": "integer", "minimum": 1, "maximum": 100 }
+        }
+      },
+      "output_schema": { "type": "object", "required": ["items"], "properties": { "items": { "type": "array", "items": { "type": "object" } } } },
+      "permissions": ["read:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 15000,
+      "receipt_fields": ["result.items"]
+    },
+    {
+      "name": "os.rollback_last_action",
+      "description": "Attempt rollback for the most recent tool call with rollback instructions.",
+      "input_schema": { "type": "object", "required": ["call_id"], "properties": { "call_id": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["rolled_back"], "properties": { "rolled_back": { "type": "boolean" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 60000,
+      "receipt_fields": ["effects.db_writes", "result.rolled_back"]
+    },
+
+    {
+      "name": "identity.get_self_model",
+      "description": "Fetch the current identity/self-model (persona, values, boundaries, goals).",
+      "input_schema": { "type": "object", "properties": {} },
+      "output_schema": { "type": "object", "required": ["persona", "values", "boundaries", "goals"], "properties": { "persona": { "type": "object" }, "values": { "type": "object" }, "boundaries": { "type": "object" }, "goals": { "type": "object" } } },
+      "permissions": ["read:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 12000,
+      "receipt_fields": ["result.persona", "result.boundaries"]
+    },
+    {
+      "name": "identity.update_self_model",
+      "description": "Update identity/self-model with a validated patch.",
+      "input_schema": { "type": "object", "required": ["patch"], "properties": { "patch": { "type": "object" }, "reason": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["updated_at"], "properties": { "updated_at": { "type": "string", "format": "date-time" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 15000,
+      "receipt_fields": ["effects.db_writes", "result.updated_at"]
+    },
+    {
+      "name": "identity.add_memory",
+      "description": "Add or update a curated memory primitive (preference/fact/boundary/commitment/pattern).",
+      "input_schema": {
+        "type": "object",
+        "required": ["memory_type", "key", "value"],
+        "properties": {
+          "memory_type": { "type": "string", "enum": ["preference", "fact", "boundary", "commitment", "pattern"] },
+          "key": { "type": "string", "maxLength": 120 },
+          "value": { "type": "object" },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "source": { "type": "string", "enum": ["user", "inferred", "imported", "admin"] }
+        }
+      },
+      "output_schema": { "type": "object", "required": ["memory_id"], "properties": { "memory_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "keyed", "key_field": "key" },
+      "timeout_ms": 15000,
+      "receipt_fields": ["effects.db_writes", "result.memory_id"]
+    },
+    {
+      "name": "identity.expire_memory",
+      "description": "Expire a memory primitive (set valid_to) by key or memory_id.",
+      "input_schema": { "type": "object", "required": ["selector"], "properties": { "selector": { "type": "object" }, "reason": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["expired"], "properties": { "expired": { "type": "boolean" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 15000,
+      "receipt_fields": ["effects.db_writes", "result.expired"]
+    },
+    {
+      "name": "identity.list_memories",
+      "description": "List active memories by type and/or key prefix.",
+      "input_schema": { "type": "object", "properties": { "memory_type": { "type": "string" }, "key_prefix": { "type": "string" }, "limit": { "type": "integer", "minimum": 1, "maximum": 200 } } },
+      "output_schema": { "type": "object", "required": ["memories"], "properties": { "memories": { "type": "array", "items": { "type": "object" } } } },
+      "permissions": ["read:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 15000,
+      "receipt_fields": ["result.memories"]
+    },
+    {
+      "name": "identity.score_pattern",
+      "description": "Record an observed pattern with confidence and supporting evidence references.",
+      "input_schema": {
+        "type": "object",
+        "required": ["key", "value", "confidence"],
+        "properties": {
+          "key": { "type": "string", "maxLength": 120 },
+          "value": { "type": "object" },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "evidence_refs": { "type": "array", "items": { "type": "object" } }
+        }
+      },
+      "output_schema": { "type": "object", "required": ["memory_id"], "properties": { "memory_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "keyed", "key_field": "key" },
+      "timeout_ms": 15000,
+      "receipt_fields": ["effects.db_writes", "result.memory_id"]
+    },
+    {
+      "name": "identity.set_boundaries",
+      "description": "Set or update boundary/veto rules for the system (policy enforcement inputs).",
+      "input_schema": { "type": "object", "required": ["boundaries"], "properties": { "boundaries": { "type": "object" }, "reason": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["updated_at"], "properties": { "updated_at": { "type": "string", "format": "date-time" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 15000,
+      "receipt_fields": ["effects.db_writes", "result.updated_at"]
+    },
+
+    {
+      "name": "entity.create",
+      "description": "Create an entity record (client/supplier/partner/friend/lead/other).",
+      "input_schema": {
+        "type": "object",
+        "required": ["entity_type", "name"],
+        "properties": {
+          "entity_type": { "type": "string", "enum": ["client", "supplier", "partner", "friend", "lead", "other"] },
+          "name": { "type": "string", "maxLength": 200 },
+          "contact": { "type": "object" },
+          "notes": { "type": "string" }
+        }
+      },
+      "output_schema": { "type": "object", "required": ["entity_id"], "properties": { "entity_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "none" },
+      "timeout_ms": 15000,
+      "receipt_fields": ["effects.db_writes", "result.entity_id"]
+    },
+    {
+      "name": "entity.update",
+      "description": "Update an entity record with a patch.",
+      "input_schema": { "type": "object", "required": ["entity_id", "patch"], "properties": { "entity_id": { "type": "string" }, "patch": { "type": "object" } } },
+      "output_schema": { "type": "object", "required": ["entity_id"], "properties": { "entity_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 15000,
+      "receipt_fields": ["effects.db_writes", "result.entity_id"]
+    },
+    {
+      "name": "entity.search",
+      "description": "Search entities by name/phone/email and optional type filter.",
+      "input_schema": { "type": "object", "required": ["query"], "properties": { "query": { "type": "string" }, "entity_type": { "type": "string" }, "limit": { "type": "integer", "minimum": 1, "maximum": 50 } } },
+      "output_schema": { "type": "object", "required": ["results"], "properties": { "results": { "type": "array", "items": { "type": "object" } } } },
+      "permissions": ["read:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 15000,
+      "receipt_fields": ["result.results"]
+    },
+    {
+      "name": "entity.get",
+      "description": "Get a single entity by entity_id.",
+      "input_schema": { "type": "object", "required": ["entity_id"], "properties": { "entity_id": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["entity"], "properties": { "entity": { "type": "object" } } },
+      "permissions": ["read:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 12000,
+      "receipt_fields": ["result.entity"]
+    },
+    {
+      "name": "entity.link_to_conversation",
+      "description": "Link an entity to a conversation/thread for continuity.",
+      "input_schema": { "type": "object", "required": ["entity_id", "conversation_id"], "properties": { "entity_id": { "type": "string" }, "conversation_id": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["linked"], "properties": { "linked": { "type": "boolean" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 12000,
+      "receipt_fields": ["effects.db_writes", "result.linked"]
+    },
+    {
+      "name": "entity.add_interaction",
+      "description": "Record an interaction (call/message/meeting/site visit) with an entity.",
+      "input_schema": {
+        "type": "object",
+        "required": ["entity_id", "interaction_type", "summary"],
+        "properties": {
+          "entity_id": { "type": "string" },
+          "interaction_type": { "type": "string", "enum": ["call", "sms", "email", "meeting", "site_visit", "other"] },
+          "summary": { "type": "string", "maxLength": 400 },
+          "details": { "type": "object" },
+          "occurred_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "output_schema": { "type": "object", "required": ["interaction_id"], "properties": { "interaction_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "none" },
+      "timeout_ms": 15000,
+      "receipt_fields": ["effects.db_writes", "result.interaction_id"]
+    },
+    {
+      "name": "entity.add_address_site_details",
+      "description": "Store site logistics: address, access notes, hazards, pets, parking, gate codes.",
+      "input_schema": { "type": "object", "required": ["entity_id", "site_details"], "properties": { "entity_id": { "type": "string" }, "site_details": { "type": "object" } } },
+      "output_schema": { "type": "object", "required": ["saved"], "properties": { "saved": { "type": "boolean" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 15000,
+      "receipt_fields": ["effects.db_writes", "result.saved"]
+    },
+
+    {
+      "name": "leads.create",
+      "description": "Create a new lead record with minimal required fields and optional source metadata.",
+      "input_schema": {
+        "type": "object",
+        "required": ["name", "phone", "suburb"],
+        "properties": {
+          "name": { "type": "string" },
+          "phone": { "type": "string" },
+          "email": { "type": "string" },
+          "suburb": { "type": "string" },
+          "source": { "type": "string", "enum": ["gmb", "google_ads", "meta", "referral", "repeat", "other"] },
+          "notes": { "type": "string" }
+        }
+      },
+      "output_schema": { "type": "object", "required": ["lead_id"], "properties": { "lead_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "keyed", "key_field": "phone" },
+      "timeout_ms": 15000,
+      "receipt_fields": ["effects.db_writes", "result.lead_id"]
+    },
+    {
+      "name": "leads.update_stage",
+      "description": "Update lead pipeline stage with optional reason and notes.",
+      "input_schema": {
+        "type": "object",
+        "required": ["lead_id", "stage"],
+        "properties": {
+          "lead_id": { "type": "string" },
+          "stage": { "type": "string", "enum": ["new", "contacted", "inspection_scheduled", "quoted", "won", "lost"] },
+          "notes": { "type": "string" }
+        }
+      },
+      "output_schema": { "type": "object", "required": ["lead_id"], "properties": { "lead_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 12000,
+      "receipt_fields": ["effects.db_writes", "result.lead_id"]
+    },
+    {
+      "name": "leads.add_source",
+      "description": "Add or update lead source attribution and campaign metadata.",
+      "input_schema": { "type": "object", "required": ["lead_id", "source"], "properties": { "lead_id": { "type": "string" }, "source": { "type": "string" }, "campaign": { "type": "object" } } },
+      "output_schema": { "type": "object", "required": ["lead_id"], "properties": { "lead_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 12000,
+      "receipt_fields": ["effects.db_writes", "result.lead_id"]
+    },
+    {
+      "name": "leads.add_photos_link",
+      "description": "Attach photo/video links (Drive/Photos/album URLs) to a lead.",
+      "input_schema": { "type": "object", "required": ["lead_id", "links"], "properties": { "lead_id": { "type": "string" }, "links": { "type": "array", "items": { "type": "string" } } } },
+      "output_schema": { "type": "object", "required": ["lead_id"], "properties": { "lead_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "none" },
+      "timeout_ms": 12000,
+      "receipt_fields": ["effects.db_writes", "result.lead_id"]
+    },
+    {
+      "name": "leads.schedule_inspection",
+      "description": "Create an inspection appointment for a lead (can also create calendar event via separate tool).",
+      "input_schema": { "type": "object", "required": ["lead_id", "preferred_window"], "properties": { "lead_id": { "type": "string" }, "preferred_window": { "type": "object" }, "notes": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["inspection_id"], "properties": { "inspection_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "none" },
+      "timeout_ms": 15000,
+      "receipt_fields": ["effects.db_writes", "result.inspection_id"]
+    },
+    {
+      "name": "leads.list_by_stage",
+      "description": "List leads filtered by stage and optional suburb/source filters.",
+      "input_schema": { "type": "object", "properties": { "stage": { "type": "string" }, "suburb": { "type": "string" }, "source": { "type": "string" }, "limit": { "type": "integer", "minimum": 1, "maximum": 100 } } },
+      "output_schema": { "type": "object", "required": ["leads"], "properties": { "leads": { "type": "array", "items": { "type": "object" } } } },
+      "permissions": ["read:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 15000,
+      "receipt_fields": ["result.leads"]
+    },
+    {
+      "name": "leads.mark_lost",
+      "description": "Mark a lead as lost with a reason for feedback loop learning.",
+      "input_schema": { "type": "object", "required": ["lead_id", "reason"], "properties": { "lead_id": { "type": "string" }, "reason": { "type": "string", "maxLength": 240 }, "notes": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["lead_id"], "properties": { "lead_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 12000,
+      "receipt_fields": ["effects.db_writes", "result.lead_id"]
+    },
+
+    {
+      "name": "inspection.create",
+      "description": "Create an inspection record linked to a lead/entity with optional address and notes.",
+      "input_schema": { "type": "object", "required": ["lead_id"], "properties": { "lead_id": { "type": "string" }, "site_address": { "type": "string" }, "notes": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["inspection_id"], "properties": { "inspection_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "none" },
+      "timeout_ms": 15000,
+      "receipt_fields": ["effects.db_writes", "result.inspection_id"]
+    },
+    {
+      "name": "inspection.add_checklist_item",
+      "description": "Add a checklist item result to an inspection (pass/fail/notes).",
+      "input_schema": { "type": "object", "required": ["inspection_id", "item_key"], "properties": { "inspection_id": { "type": "string" }, "item_key": { "type": "string" }, "status": { "type": "string", "enum": ["pass", "fail", "na"] }, "notes": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["item_id"], "properties": { "item_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "none" },
+      "timeout_ms": 12000,
+      "receipt_fields": ["effects.db_writes", "result.item_id"]
+    },
+    {
+      "name": "inspection.add_measurement",
+      "description": "Add a measurement to an inspection (length/area/count with units).",
+      "input_schema": { "type": "object", "required": ["inspection_id", "label", "value", "unit"], "properties": { "inspection_id": { "type": "string" }, "label": { "type": "string" }, "value": { "type": "number" }, "unit": { "type": "string" }, "notes": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["measurement_id"], "properties": { "measurement_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "none" },
+      "timeout_ms": 12000,
+      "receipt_fields": ["effects.db_writes", "result.measurement_id"]
+    },
+    {
+      "name": "inspection.add_photo_ref",
+      "description": "Attach a media reference (file_ref/url) to an inspection.",
+      "input_schema": { "type": "object", "required": ["inspection_id", "file_ref"], "properties": { "inspection_id": { "type": "string" }, "file_ref": { "type": "string" }, "label": { "type": "string" }, "tags": { "type": "array", "items": { "type": "string" } } } },
+      "output_schema": { "type": "object", "required": ["photo_ref_id"], "properties": { "photo_ref_id": { "type": "string" } } },
+      "permissions": ["write:db", "read:files"],
+      "idempotency": { "mode": "none" },
+      "timeout_ms": 12000,
+      "receipt_fields": ["effects.db_writes", "result.photo_ref_id"]
+    },
+    {
+      "name": "inspection.add_defect",
+      "description": "Record a defect on an inspection (category, severity, notes).",
+      "input_schema": { "type": "object", "required": ["inspection_id", "category"], "properties": { "inspection_id": { "type": "string" }, "category": { "type": "string", "enum": ["tile", "ridge", "valley", "flashing", "gutter", "leak", "other"] }, "severity": { "type": "string", "enum": ["low", "medium", "high"] }, "notes": { "type": "string" }, "photo_refs": { "type": "array", "items": { "type": "string" } } } },
+      "output_schema": { "type": "object", "required": ["defect_id"], "properties": { "defect_id": { "type": "string" } } },
+      "permissions": ["write:db", "read:files"],
+      "idempotency": { "mode": "none" },
+      "timeout_ms": 15000,
+      "receipt_fields": ["effects.db_writes", "result.defect_id"]
+    },
+    {
+      "name": "inspection.generate_scope_summary",
+      "description": "Generate a structured scope summary from inspection data (draft only, no sending).",
+      "input_schema": { "type": "object", "required": ["inspection_id"], "properties": { "inspection_id": { "type": "string" }, "format": { "type": "string", "enum": ["bullet", "sections"] } } },
+      "output_schema": { "type": "object", "required": ["scope_text"], "properties": { "scope_text": { "type": "string" } } },
+      "permissions": ["read:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 30000,
+      "receipt_fields": ["result.scope_text"]
+    },
+    {
+      "name": "inspection.lock",
+      "description": "Lock an inspection to prevent further edits before quoting.",
+      "input_schema": { "type": "object", "required": ["inspection_id"], "properties": { "inspection_id": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["locked"], "properties": { "locked": { "type": "boolean" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 12000,
+      "receipt_fields": ["effects.db_writes", "result.locked"]
+    },
+
+    {
+      "name": "quote.create_from_inspection",
+      "description": "Create a quote draft from a locked inspection (line items can be edited later).",
+      "input_schema": { "type": "object", "required": ["inspection_id"], "properties": { "inspection_id": { "type": "string" }, "pricing_profile": { "type": "string" }, "notes": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["quote_id"], "properties": { "quote_id": { "type": "string" } } },
+      "permissions": ["read:db", "write:db"],
+      "idempotency": { "mode": "none" },
+      "timeout_ms": 30000,
+      "receipt_fields": ["effects.db_writes", "result.quote_id"]
+    },
+    {
+      "name": "quote.update_line_items",
+      "description": "Update quote line items (add/remove/patch).",
+      "input_schema": { "type": "object", "required": ["quote_id", "line_items"], "properties": { "quote_id": { "type": "string" }, "line_items": { "type": "array", "items": { "type": "object" } } } },
+      "output_schema": { "type": "object", "required": ["quote_id"], "properties": { "quote_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 30000,
+      "receipt_fields": ["effects.db_writes", "result.quote_id"]
+    },
+    {
+      "name": "quote.calculate_totals",
+      "description": "Recalculate quote totals (labour/materials/tax) based on line items.",
+      "input_schema": { "type": "object", "required": ["quote_id"], "properties": { "quote_id": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["totals"], "properties": { "totals": { "type": "object" } } },
+      "permissions": ["read:db", "write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 20000,
+      "receipt_fields": ["effects.db_writes", "result.totals"]
+    },
+    {
+      "name": "quote.generate_pdf",
+      "description": "Generate a quote PDF from an existing quote record; returns file reference only.",
+      "input_schema": { "type": "object", "required": ["quote_id"], "properties": { "quote_id": { "type": "string" }, "template": { "type": "string", "enum": ["standard"] } } },
+      "output_schema": { "type": "object", "required": ["file_ref"], "properties": { "file_ref": { "type": "string" } } },
+      "permissions": ["read:db", "write:files"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 60000,
+      "receipt_fields": ["effects.files_written", "result.file_ref"]
+    },
+    {
+      "name": "quote.send_to_client",
+      "description": "Send a quote link/PDF to a client via email/SMS with logging.",
+      "input_schema": {
+        "type": "object",
+        "required": ["quote_id", "channel"],
+        "properties": {
+          "quote_id": { "type": "string" },
+          "channel": { "type": "string", "enum": ["email", "sms", "both"] },
+          "email": { "type": "string" },
+          "phone": { "type": "string" },
+          "message_override": { "type": "string" }
+        }
+      },
+      "output_schema": { "type": "object", "required": ["sent"], "properties": { "sent": { "type": "boolean" } } },
+      "permissions": ["read:db", "send:email", "send:sms", "write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 45000,
+      "receipt_fields": ["effects.messages_sent", "effects.db_writes", "result.sent"]
+    },
+    {
+      "name": "quote.mark_accepted",
+      "description": "Mark a quote as accepted (optionally capture acceptance timestamp and deposit requirement).",
+      "input_schema": { "type": "object", "required": ["quote_id"], "properties": { "quote_id": { "type": "string" }, "accepted_at": { "type": "string", "format": "date-time" }, "notes": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["quote_id"], "properties": { "quote_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 15000,
+      "receipt_fields": ["effects.db_writes", "result.quote_id"]
+    },
+    {
+      "name": "quote.mark_declined",
+      "description": "Mark a quote as declined with reason.",
+      "input_schema": { "type": "object", "required": ["quote_id", "reason"], "properties": { "quote_id": { "type": "string" }, "reason": { "type": "string", "maxLength": 240 }, "notes": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["quote_id"], "properties": { "quote_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 15000,
+      "receipt_fields": ["effects.db_writes", "result.quote_id"]
+    },
+
+    {
+      "name": "job.create_from_accepted_quote",
+      "description": "Create a job from an accepted quote.",
+      "input_schema": { "type": "object", "required": ["quote_id"], "properties": { "quote_id": { "type": "string" }, "notes": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["job_id"], "properties": { "job_id": { "type": "string" } } },
+      "permissions": ["read:db", "write:db"],
+      "idempotency": { "mode": "none" },
+      "timeout_ms": 30000,
+      "receipt_fields": ["effects.db_writes", "result.job_id"]
+    },
+    {
+      "name": "job.assign_dates",
+      "description": "Assign planned start/end dates to a job (calendar event created via calendar tool).",
+      "input_schema": { "type": "object", "required": ["job_id", "start_date"], "properties": { "job_id": { "type": "string" }, "start_date": { "type": "string", "format": "date" }, "end_date": { "type": "string", "format": "date" }, "notes": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["job_id"], "properties": { "job_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 15000,
+      "receipt_fields": ["effects.db_writes", "result.job_id"]
+    },
+    {
+      "name": "job.create_job_card",
+      "description": "Generate an on-site job card (checklists, materials, access notes).",
+      "input_schema": { "type": "object", "required": ["job_id"], "properties": { "job_id": { "type": "string" }, "format": { "type": "string", "enum": ["text", "pdf"] } } },
+      "output_schema": { "type": "object", "required": ["job_card_ref"], "properties": { "job_card_ref": { "type": "string" } } },
+      "permissions": ["read:db", "write:files"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 60000,
+      "receipt_fields": ["effects.files_written", "result.job_card_ref"]
+    },
+    {
+      "name": "job.add_site_notes",
+      "description": "Add site notes to a job (access, hazards, materials staging).",
+      "input_schema": { "type": "object", "required": ["job_id", "notes"], "properties": { "job_id": { "type": "string" }, "notes": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["job_id"], "properties": { "job_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "none" },
+      "timeout_ms": 15000,
+      "receipt_fields": ["effects.db_writes", "result.job_id"]
+    },
+    {
+      "name": "job.add_progress_update",
+      "description": "Record a progress update against a job with optional photo refs.",
+      "input_schema": { "type": "object", "required": ["job_id", "summary"], "properties": { "job_id": { "type": "string" }, "summary": { "type": "string", "maxLength": 400 }, "details": { "type": "object" }, "photo_refs": { "type": "array", "items": { "type": "string" } } } },
+      "output_schema": { "type": "object", "required": ["update_id"], "properties": { "update_id": { "type": "string" } } },
+      "permissions": ["write:db", "read:files"],
+      "idempotency": { "mode": "none" },
+      "timeout_ms": 20000,
+      "receipt_fields": ["effects.db_writes", "result.update_id"]
+    },
+    {
+      "name": "job.add_before_after_refs",
+      "description": "Attach before/after media references to a job for proof and marketing reuse.",
+      "input_schema": { "type": "object", "required": ["job_id", "before_refs", "after_refs"], "properties": { "job_id": { "type": "string" }, "before_refs": { "type": "array", "items": { "type": "string" } }, "after_refs": { "type": "array", "items": { "type": "string" } } } },
+      "output_schema": { "type": "object", "required": ["job_id"], "properties": { "job_id": { "type": "string" } } },
+      "permissions": ["write:db", "read:files"],
+      "idempotency": { "mode": "none" },
+      "timeout_ms": 20000,
+      "receipt_fields": ["effects.db_writes", "result.job_id"]
+    },
+    {
+      "name": "job.complete",
+      "description": "Mark job as complete and capture completion date and notes.",
+      "input_schema": { "type": "object", "required": ["job_id"], "properties": { "job_id": { "type": "string" }, "completed_at": { "type": "string", "format": "date-time" }, "notes": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["job_id"], "properties": { "job_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 20000,
+      "receipt_fields": ["effects.db_writes", "result.job_id"]
+    },
+    {
+      "name": "job.generate_warranty_certificate",
+      "description": "Generate a warranty certificate for a completed job (PDF).",
+      "input_schema": { "type": "object", "required": ["job_id", "warranty_term"], "properties": { "job_id": { "type": "string" }, "warranty_term": { "type": "string", "maxLength": 60 }, "template": { "type": "string", "enum": ["standard"] } } },
+      "output_schema": { "type": "object", "required": ["file_ref"], "properties": { "file_ref": { "type": "string" } } },
+      "permissions": ["read:db", "write:files"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 60000,
+      "receipt_fields": ["effects.files_written", "result.file_ref"]
+    },
+    {
+      "name": "job.request_review",
+      "description": "Send a review request to client with template and link, and log it.",
+      "input_schema": { "type": "object", "required": ["job_id", "channel"], "properties": { "job_id": { "type": "string" }, "channel": { "type": "string", "enum": ["sms", "email", "both"] }, "message_override": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["sent"], "properties": { "sent": { "type": "boolean" } } },
+      "permissions": ["read:db", "send:sms", "send:email", "write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 45000,
+      "receipt_fields": ["effects.messages_sent", "effects.db_writes", "result.sent"]
+    },
+
+    {
+      "name": "invoice.create_from_job",
+      "description": "Create an invoice from a completed job (draft).",
+      "input_schema": { "type": "object", "required": ["job_id"], "properties": { "job_id": { "type": "string" }, "due_days": { "type": "integer", "minimum": 0, "maximum": 90 }, "notes": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["invoice_id"], "properties": { "invoice_id": { "type": "string" } } },
+      "permissions": ["read:db", "write:db"],
+      "idempotency": { "mode": "none" },
+      "timeout_ms": 30000,
+      "receipt_fields": ["effects.db_writes", "result.invoice_id"]
+    },
+    {
+      "name": "invoice.send",
+      "description": "Send an invoice to a client via email/SMS with logging.",
+      "input_schema": { "type": "object", "required": ["invoice_id", "channel"], "properties": { "invoice_id": { "type": "string" }, "channel": { "type": "string", "enum": ["email", "sms", "both"] }, "message_override": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["sent"], "properties": { "sent": { "type": "boolean" } } },
+      "permissions": ["read:db", "send:email", "send:sms", "write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 45000,
+      "receipt_fields": ["effects.messages_sent", "effects.db_writes", "result.sent"]
+    },
+    {
+      "name": "invoice.add_payment",
+      "description": "Record a payment against an invoice (amount, date, method).",
+      "input_schema": { "type": "object", "required": ["invoice_id", "amount_cents"], "properties": { "invoice_id": { "type": "string" }, "amount_cents": { "type": "integer", "minimum": 1 }, "paid_at": { "type": "string", "format": "date-time" }, "method": { "type": "string", "enum": ["cash", "bank_transfer", "card", "other"] }, "reference": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["payment_id"], "properties": { "payment_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "none" },
+      "timeout_ms": 20000,
+      "receipt_fields": ["effects.db_writes", "result.payment_id"]
+    },
+    {
+      "name": "invoice.mark_overdue",
+      "description": "Mark an invoice as overdue (derived fields + reminders scheduling).",
+      "input_schema": { "type": "object", "required": ["invoice_id"], "properties": { "invoice_id": { "type": "string" }, "as_of": { "type": "string", "format": "date-time" } } },
+      "output_schema": { "type": "object", "required": ["invoice_id"], "properties": { "invoice_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 20000,
+      "receipt_fields": ["effects.db_writes", "result.invoice_id"]
+    },
+    {
+      "name": "invoice.send_reminder_sms",
+      "description": "Send an invoice reminder SMS and log it to the invoice history.",
+      "input_schema": { "type": "object", "required": ["invoice_id", "to", "message"], "properties": { "invoice_id": { "type": "string" }, "to": { "type": "string" }, "message": { "type": "string", "maxLength": 1000 }, "template_id": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["sms_id"], "properties": { "sms_id": { "type": "string" } } },
+      "permissions": ["send:sms", "write:db", "read:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 20000,
+      "receipt_fields": ["effects.messages_sent", "effects.db_writes", "result.sms_id"]
+    },
+    {
+      "name": "invoice.send_reminder_email",
+      "description": "Send an invoice reminder email and log it to the invoice history.",
+      "input_schema": { "type": "object", "required": ["invoice_id", "to", "subject", "body"], "properties": { "invoice_id": { "type": "string" }, "to": { "type": "string" }, "subject": { "type": "string", "maxLength": 160 }, "body": { "type": "string" }, "template_id": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["email_id"], "properties": { "email_id": { "type": "string" } } },
+      "permissions": ["send:email", "write:db", "read:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 30000,
+      "receipt_fields": ["effects.messages_sent", "effects.db_writes", "result.email_id"]
+    },
+    {
+      "name": "finance.generate_cashflow_snapshot",
+      "description": "Generate a basic cashflow snapshot from invoices, payments, and key expenses (simple).",
+      "input_schema": { "type": "object", "properties": { "from": { "type": "string", "format": "date" }, "to": { "type": "string", "format": "date" } } },
+      "output_schema": { "type": "object", "required": ["summary"], "properties": { "summary": { "type": "object" } } },
+      "permissions": ["read:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 30000,
+      "receipt_fields": ["result.summary"]
+    },
+    {
+      "name": "finance.generate_pnl_snapshot",
+      "description": "Generate a lightweight P&L snapshot (revenue, direct costs, gross margin) for a date range.",
+      "input_schema": { "type": "object", "properties": { "from": { "type": "string", "format": "date" }, "to": { "type": "string", "format": "date" } } },
+      "output_schema": { "type": "object", "required": ["summary"], "properties": { "summary": { "type": "object" } } },
+      "permissions": ["read:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 45000,
+      "receipt_fields": ["result.summary"]
+    },
+
+    {
+      "name": "comms.compose_sms",
+      "description": "Generate an SMS draft (no sending).",
+      "input_schema": { "type": "object", "required": ["purpose", "context_ref"], "properties": { "purpose": { "type": "string" }, "context_ref": { "type": "object" }, "tone": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["message"], "properties": { "message": { "type": "string" } } },
+      "permissions": ["read:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 20000,
+      "receipt_fields": ["result.message"]
+    },
+    {
+      "name": "comms.send_sms",
+      "description": "Send an SMS message to a single recipient, with mandatory logging and context reference.",
+      "input_schema": {
+        "type": "object",
+        "required": ["to", "message", "context_ref"],
+        "properties": {
+          "to": { "type": "string" },
+          "message": { "type": "string", "maxLength": 1000 },
+          "context_ref": { "type": "object", "required": ["type", "id"], "properties": { "type": { "type": "string", "enum": ["lead", "quote", "job", "invoice", "personal"] }, "id": { "type": "string" } } },
+          "template_id": { "type": "string" }
+        }
+      },
+      "output_schema": { "type": "object", "required": ["sms_id"], "properties": { "sms_id": { "type": "string" } } },
+      "permissions": ["send:sms", "write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 20000,
+      "receipt_fields": ["effects.messages_sent", "effects.db_writes", "result.sms_id"]
+    },
+    {
+      "name": "comms.compose_email",
+      "description": "Generate an email draft (no sending).",
+      "input_schema": { "type": "object", "required": ["purpose", "context_ref"], "properties": { "purpose": { "type": "string" }, "context_ref": { "type": "object" }, "tone": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["subject", "body"], "properties": { "subject": { "type": "string" }, "body": { "type": "string" } } },
+      "permissions": ["read:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 25000,
+      "receipt_fields": ["result.subject"]
+    },
+    {
+      "name": "comms.send_email",
+      "description": "Send an email message to a single recipient with logging and context reference.",
+      "input_schema": { "type": "object", "required": ["to", "subject", "body", "context_ref"], "properties": { "to": { "type": "string" }, "subject": { "type": "string", "maxLength": 160 }, "body": { "type": "string" }, "context_ref": { "type": "object" }, "template_id": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["email_id"], "properties": { "email_id": { "type": "string" } } },
+      "permissions": ["send:email", "write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 30000,
+      "receipt_fields": ["effects.messages_sent", "effects.db_writes", "result.email_id"]
+    },
+    {
+      "name": "comms.log_call_outcome",
+      "description": "Log a call outcome (answered/no answer/left message) tied to an entity and context ref.",
+      "input_schema": { "type": "object", "required": ["entity_id", "outcome"], "properties": { "entity_id": { "type": "string" }, "outcome": { "type": "string", "enum": ["answered", "no_answer", "left_message", "busy", "other"] }, "notes": { "type": "string" }, "context_ref": { "type": "object" } } },
+      "output_schema": { "type": "object", "required": ["interaction_id"], "properties": { "interaction_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "none" },
+      "timeout_ms": 15000,
+      "receipt_fields": ["effects.db_writes", "result.interaction_id"]
+    },
+    {
+      "name": "comms.create_followup_task_from_message",
+      "description": "Create a follow-up task derived from a sent/received message context.",
+      "input_schema": { "type": "object", "required": ["title", "context_ref"], "properties": { "title": { "type": "string" }, "context_ref": { "type": "object" }, "due_at": { "type": "string", "format": "date-time" } } },
+      "output_schema": { "type": "object", "required": ["task_id"], "properties": { "task_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "none" },
+      "timeout_ms": 15000,
+      "receipt_fields": ["effects.db_writes", "result.task_id"]
+    },
+
+    {
+      "name": "calendar.find_slots",
+      "description": "Find available time slots within a date range with optional duration.",
+      "input_schema": { "type": "object", "required": ["from", "to"], "properties": { "from": { "type": "string", "format": "date-time" }, "to": { "type": "string", "format": "date-time" }, "duration_minutes": { "type": "integer", "minimum": 15, "maximum": 480 } } },
+      "output_schema": { "type": "object", "required": ["slots"], "properties": { "slots": { "type": "array", "items": { "type": "object" } } } },
+      "permissions": ["calendar:read"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 25000,
+      "receipt_fields": ["result.slots"]
+    },
+    {
+      "name": "calendar.create_event",
+      "description": "Create a calendar event for an inspection/job with optional linkage to job/lead.",
+      "input_schema": { "type": "object", "required": ["title", "start_at", "end_at"], "properties": { "title": { "type": "string" }, "start_at": { "type": "string", "format": "date-time" }, "end_at": { "type": "string", "format": "date-time" }, "location": { "type": "string" }, "context_ref": { "type": "object" } } },
+      "output_schema": { "type": "object", "required": ["event_id"], "properties": { "event_id": { "type": "string" } } },
+      "permissions": ["calendar:write", "write:db"],
+      "idempotency": { "mode": "none" },
+      "timeout_ms": 30000,
+      "receipt_fields": ["effects.external_calls", "effects.db_writes", "result.event_id"]
+    },
+    {
+      "name": "calendar.update_event",
+      "description": "Update a calendar event by event_id.",
+      "input_schema": { "type": "object", "required": ["event_id", "patch"], "properties": { "event_id": { "type": "string" }, "patch": { "type": "object" } } },
+      "output_schema": { "type": "object", "required": ["event_id"], "properties": { "event_id": { "type": "string" } } },
+      "permissions": ["calendar:write", "write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 30000,
+      "receipt_fields": ["effects.external_calls", "effects.db_writes", "result.event_id"]
+    },
+    {
+      "name": "calendar.cancel_event",
+      "description": "Cancel a calendar event by event_id.",
+      "input_schema": { "type": "object", "required": ["event_id"], "properties": { "event_id": { "type": "string" }, "reason": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["cancelled"], "properties": { "cancelled": { "type": "boolean" } } },
+      "permissions": ["calendar:write", "write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 30000,
+      "receipt_fields": ["effects.external_calls", "effects.db_writes", "result.cancelled"]
+    },
+    {
+      "name": "calendar.attach_job_to_event",
+      "description": "Attach a job/lead reference to an existing calendar event for continuity.",
+      "input_schema": { "type": "object", "required": ["event_id", "context_ref"], "properties": { "event_id": { "type": "string" }, "context_ref": { "type": "object" } } },
+      "output_schema": { "type": "object", "required": ["attached"], "properties": { "attached": { "type": "boolean" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 15000,
+      "receipt_fields": ["effects.db_writes", "result.attached"]
+    },
+
+    {
+      "name": "media.register_asset",
+      "description": "Register a media asset (photo/video/file) with a storage reference or external URL.",
+      "input_schema": { "type": "object", "required": ["file_ref", "asset_type"], "properties": { "file_ref": { "type": "string" }, "asset_type": { "type": "string", "enum": ["photo", "video", "document", "other"] }, "job_id": { "type": "string" }, "suburb": { "type": "string" }, "taken_at": { "type": "string", "format": "date-time" }, "notes": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["asset_id"], "properties": { "asset_id": { "type": "string" } } },
+      "permissions": ["write:db", "read:files"],
+      "idempotency": { "mode": "keyed", "key_field": "file_ref" },
+      "timeout_ms": 20000,
+      "receipt_fields": ["effects.db_writes", "result.asset_id"]
+    },
+    {
+      "name": "media.tag_asset",
+      "description": "Apply tags to an asset (before/after/defect/service/suburb).",
+      "input_schema": { "type": "object", "required": ["asset_id", "tags"], "properties": { "asset_id": { "type": "string" }, "tags": { "type": "array", "items": { "type": "string" } } } },
+      "output_schema": { "type": "object", "required": ["asset_id"], "properties": { "asset_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 15000,
+      "receipt_fields": ["effects.db_writes", "result.asset_id"]
+    },
+    {
+      "name": "media.generate_alt_text",
+      "description": "Generate factual alt text for an image asset (short, non-hype).",
+      "input_schema": { "type": "object", "required": ["asset_id"], "properties": { "asset_id": { "type": "string" }, "max_length": { "type": "integer", "minimum": 40, "maximum": 200 } } },
+      "output_schema": { "type": "object", "required": ["alt_text"], "properties": { "alt_text": { "type": "string" } } },
+      "permissions": ["read:db", "read:files"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 30000,
+      "receipt_fields": ["result.alt_text"]
+    },
+    {
+      "name": "media.generate_caption",
+      "description": "Generate a brand-aligned caption for an asset (no hype; proof-driven).",
+      "input_schema": { "type": "object", "required": ["asset_id"], "properties": { "asset_id": { "type": "string" }, "platform": { "type": "string", "enum": ["website", "gmb", "meta", "other"] } } },
+      "output_schema": { "type": "object", "required": ["caption"], "properties": { "caption": { "type": "string" } } },
+      "permissions": ["read:db", "read:files"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 30000,
+      "receipt_fields": ["result.caption"]
+    },
+    {
+      "name": "media.propose_rename_map",
+      "description": "Propose a safe rename/sort map for assets (no filesystem writes unless approved).",
+      "input_schema": { "type": "object", "required": ["asset_ids"], "properties": { "asset_ids": { "type": "array", "items": { "type": "string" } }, "naming_policy": { "type": "string" }, "dry_run_only": { "type": "boolean" } } },
+      "output_schema": { "type": "object", "required": ["rename_map"], "properties": { "rename_map": { "type": "array", "items": { "type": "object" } } } },
+      "permissions": ["read:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 60000,
+      "receipt_fields": ["result.rename_map"]
+    },
+    {
+      "name": "media.export_website_pack",
+      "description": "Export selected assets plus alt/captions into a website-ready pack (zip/csv refs).",
+      "input_schema": { "type": "object", "required": ["asset_ids"], "properties": { "asset_ids": { "type": "array", "items": { "type": "string" } }, "include_csv": { "type": "boolean" }, "format": { "type": "string", "enum": ["zip"] } } },
+      "output_schema": { "type": "object", "required": ["pack_ref"], "properties": { "pack_ref": { "type": "string" } } },
+      "permissions": ["read:db", "read:files", "write:files"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 120000,
+      "receipt_fields": ["effects.files_written", "result.pack_ref"]
+    },
+
+    {
+      "name": "marketing.generate_meta_ad_pack",
+      "description": "Generate a Meta ad pack draft (copy only; no posting).",
+      "input_schema": { "type": "object", "required": ["offer", "suburb_or_region"], "properties": { "offer": { "type": "string" }, "suburb_or_region": { "type": "string" }, "service": { "type": "string" }, "assets_refs": { "type": "array", "items": { "type": "string" } } } },
+      "output_schema": { "type": "object", "required": ["ads"], "properties": { "ads": { "type": "array", "items": { "type": "object" } } } },
+      "permissions": ["read:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 45000,
+      "receipt_fields": ["result.ads"]
+    },
+    {
+      "name": "marketing.generate_google_ads_pack",
+      "description": "Generate a Google Ads pack draft (headlines/descriptions/keywords only; no posting).",
+      "input_schema": { "type": "object", "required": ["service", "region"], "properties": { "service": { "type": "string" }, "region": { "type": "string" }, "landing_page": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["pack"], "properties": { "pack": { "type": "object" } } },
+      "permissions": ["read:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 45000,
+      "receipt_fields": ["result.pack"]
+    },
+    {
+      "name": "marketing.generate_case_study_from_job",
+      "description": "Generate a case study draft from a completed job (copy only).",
+      "input_schema": { "type": "object", "required": ["job_id"], "properties": { "job_id": { "type": "string" }, "format": { "type": "string", "enum": ["blog", "short", "website_section"] } } },
+      "output_schema": { "type": "object", "required": ["draft"], "properties": { "draft": { "type": "string" } } },
+      "permissions": ["read:db", "read:files"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 60000,
+      "receipt_fields": ["result.draft"]
+    },
+    {
+      "name": "marketing.generate_gmb_post",
+      "description": "Generate a Google Business Profile post draft (copy only).",
+      "input_schema": { "type": "object", "required": ["topic", "suburb_or_region"], "properties": { "topic": { "type": "string" }, "suburb_or_region": { "type": "string" }, "cta": { "type": "string" }, "asset_refs": { "type": "array", "items": { "type": "string" } } } },
+      "output_schema": { "type": "object", "required": ["post"], "properties": { "post": { "type": "object" } } },
+      "permissions": ["read:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 45000,
+      "receipt_fields": ["result.post"]
+    },
+    {
+      "name": "marketing.schedule_content",
+      "description": "Schedule content as tasks/events (does not publish).",
+      "input_schema": { "type": "object", "required": ["items"], "properties": { "items": { "type": "array", "items": { "type": "object" } } } },
+      "output_schema": { "type": "object", "required": ["created_task_ids"], "properties": { "created_task_ids": { "type": "array", "items": { "type": "string" } } } },
+      "permissions": ["write:db", "calendar:write"],
+      "idempotency": { "mode": "none" },
+      "timeout_ms": 60000,
+      "receipt_fields": ["effects.db_writes", "result.created_task_ids"]
+    },
+    {
+      "name": "marketing.log_campaign_result",
+      "description": "Log campaign results manually for feedback loops (leads, spend, CPA, notes).",
+      "input_schema": { "type": "object", "required": ["channel", "metrics"], "properties": { "channel": { "type": "string", "enum": ["google_ads", "meta", "gmb", "other"] }, "metrics": { "type": "object" }, "notes": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["log_id"], "properties": { "log_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "none" },
+      "timeout_ms": 15000,
+      "receipt_fields": ["effects.db_writes", "result.log_id"]
+    },
+
+    {
+      "name": "personal.check_in",
+      "description": "Record a quick personal check-in (energy/stress/focus) for continuity and pattern detection.",
+      "input_schema": { "type": "object", "required": ["energy", "stress", "focus"], "properties": { "energy": { "type": "string", "enum": ["low", "medium", "high"] }, "stress": { "type": "string", "enum": ["low", "medium", "high"] }, "focus": { "type": "string", "enum": ["scattered", "ok", "locked_in"] }, "notes": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["checkin_id"], "properties": { "checkin_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "none" },
+      "timeout_ms": 15000,
+      "receipt_fields": ["effects.db_writes", "result.checkin_id"]
+    },
+    {
+      "name": "personal.create_commitment",
+      "description": "Create a personal commitment (habit/decision/promise) with optional reminder schedule.",
+      "input_schema": { "type": "object", "required": ["title"], "properties": { "title": { "type": "string" }, "details": { "type": "string" }, "review_at": { "type": "string", "format": "date-time" } } },
+      "output_schema": { "type": "object", "required": ["commitment_id"], "properties": { "commitment_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "none" },
+      "timeout_ms": 15000,
+      "receipt_fields": ["effects.db_writes", "result.commitment_id"]
+    },
+    {
+      "name": "personal.review_commitments",
+      "description": "List current personal commitments for review.",
+      "input_schema": { "type": "object", "properties": { "status": { "type": "string", "enum": ["active", "closed", "all"] }, "limit": { "type": "integer", "minimum": 1, "maximum": 100 } } },
+      "output_schema": { "type": "object", "required": ["commitments"], "properties": { "commitments": { "type": "array", "items": { "type": "object" } } } },
+      "permissions": ["read:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 20000,
+      "receipt_fields": ["result.commitments"]
+    },
+    {
+      "name": "personal.decision_support",
+      "description": "Decision support: structure options/tradeoffs and recommend next step (no side effects).",
+      "input_schema": { "type": "object", "required": ["decision"], "properties": { "decision": { "type": "string" }, "options": { "type": "array", "items": { "type": "string" } }, "constraints": { "type": "object" } } },
+      "output_schema": { "type": "object", "required": ["analysis"], "properties": { "analysis": { "type": "object" } } },
+      "permissions": ["read:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 45000,
+      "receipt_fields": ["result.analysis"]
+    },
+    {
+      "name": "personal.boundary_set",
+      "description": "Store a personal boundary as a boundary memory primitive and optionally schedule reminders.",
+      "input_schema": { "type": "object", "required": ["key", "value"], "properties": { "key": { "type": "string" }, "value": { "type": "object" }, "remind_at": { "type": "string", "format": "date-time" } } },
+      "output_schema": { "type": "object", "required": ["memory_id"], "properties": { "memory_id": { "type": "string" } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "keyed", "key_field": "key" },
+      "timeout_ms": 20000,
+      "receipt_fields": ["effects.db_writes", "result.memory_id"]
+    },
+
+    {
+      "name": "integrations.google_drive.search",
+      "description": "Search Google Drive for files by query and return basic metadata (requires connector).",
+      "input_schema": { "type": "object", "required": ["query"], "properties": { "query": { "type": "string" }, "file_type": { "type": "string" }, "limit": { "type": "integer", "minimum": 1, "maximum": 50 } } },
+      "output_schema": { "type": "object", "required": ["files"], "properties": { "files": { "type": "array", "items": { "type": "object" } } } },
+      "permissions": ["read:files"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 45000,
+      "receipt_fields": ["result.files"]
+    },
+    {
+      "name": "integrations.google_photos.import_links",
+      "description": "Register Google Photos album/share links as media sources (does not download without separate process).",
+      "input_schema": { "type": "object", "required": ["links"], "properties": { "links": { "type": "array", "items": { "type": "string" } }, "notes": { "type": "string" } } },
+      "output_schema": { "type": "object", "required": ["source_ids"], "properties": { "source_ids": { "type": "array", "items": { "type": "string" } } } },
+      "permissions": ["write:db"],
+      "idempotency": { "mode": "none" },
+      "timeout_ms": 30000,
+      "receipt_fields": ["effects.db_writes", "result.source_ids"]
+    },
+    {
+      "name": "integrations.analytics.pull_summary",
+      "description": "Pull a summary from analytics provider (e.g., GA4) for a date range (requires connector).",
+      "input_schema": { "type": "object", "required": ["from", "to"], "properties": { "from": { "type": "string", "format": "date" }, "to": { "type": "string", "format": "date" } } },
+      "output_schema": { "type": "object", "required": ["summary"], "properties": { "summary": { "type": "object" } } },
+      "permissions": ["read:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 60000,
+      "receipt_fields": ["result.summary"]
+    },
+    {
+      "name": "integrations.ads.pull_summary",
+      "description": "Pull an ads performance summary (Google Ads/Meta) for a date range (requires connector).",
+      "input_schema": { "type": "object", "required": ["channel", "from", "to"], "properties": { "channel": { "type": "string", "enum": ["google_ads", "meta"] }, "from": { "type": "string", "format": "date" }, "to": { "type": "string", "format": "date" } } },
+      "output_schema": { "type": "object", "required": ["summary"], "properties": { "summary": { "type": "object" } } },
+      "permissions": ["ads:read"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 60000,
+      "receipt_fields": ["result.summary"]
+    },
+    {
+      "name": "integrations.sms_provider.health",
+      "description": "Check SMS provider connectivity and sending capability.",
+      "input_schema": { "type": "object", "properties": {} },
+      "output_schema": { "type": "object", "required": ["status"], "properties": { "status": { "type": "string", "enum": ["ok", "degraded", "down"] } } },
+      "permissions": ["send:sms"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 10000,
+      "receipt_fields": ["result.status"]
+    },
+    {
+      "name": "integrations.email_provider.health",
+      "description": "Check email provider connectivity and sending capability.",
+      "input_schema": { "type": "object", "properties": {} },
+      "output_schema": { "type": "object", "required": ["status"], "properties": { "status": { "type": "string", "enum": ["ok", "degraded", "down"] } } },
+      "permissions": ["send:email"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 10000,
+      "receipt_fields": ["result.status"]
+    }
+  ]
+}
