@@ -56,13 +56,23 @@ async function executeJob(job) {
     }
 
     // 4. Execute Handler
-    const [domain, method] = job.tool_name.split('.');
+    // Handle nested tool names like integrations.google_drive.search
+    const parts = job.tool_name.split('.');
+    const domain = parts[0];
     const handlerPath = `./src/handlers/${domain}.js`;
 
     let handler;
     try {
       const module = await import(handlerPath);
-      handler = module[method];
+
+      // For nested names like integrations.google_drive.search
+      // Try: google_drive_search, then google_drive, then the last part
+      if (parts.length === 3) {
+        const nestedName = `${parts[1]}_${parts[2]}`;
+        handler = module[nestedName] || module[parts[1]] || module[parts[2]];
+      } else if (parts.length === 2) {
+        handler = module[parts[1]];
+      }
     } catch (err) {
       console.warn(`Failed to load handler ${handlerPath}:`, err.message);
     }
