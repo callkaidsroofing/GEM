@@ -2,19 +2,16 @@ import { supabase } from './src/lib/supabase.js';
 import { getTool } from './src/lib/registry.js';
 import { validateInput, validateOutput } from './src/lib/validate.js';
 import { checkIdempotency } from './src/lib/idempotency.js';
+import crypto from 'crypto';
 
 const POLL_INTERVAL = parseInt(process.env.TOOLS_POLL_INTERVAL_MS || '5000', 10);
+const WORKER_ID = `worker-${crypto.randomUUID().slice(0, 8)}`;
 
 async function poll() {
   try {
-    // 1. Claim jobs atomically
+    // 1. Claim job atomically using RPC
     const { data: jobs, error: claimError } = await supabase
-      .from('core_tool_calls')
-      .update({ status: 'running', updated_at: new Date().toISOString() })
-      .eq('status', 'queued')
-      .select()
-      .order('created_at', { ascending: true })
-      .limit(1);
+      .rpc('claim_next_core_tool_call', { p_worker_id: WORKER_ID });
 
     if (claimError) {
       console.error('Error claiming jobs:', claimError);
@@ -26,7 +23,7 @@ async function poll() {
     }
 
     const job = jobs[0];
-    console.log(`Processing job ${job.id}: ${job.tool_name}`);
+    console.log(`[${WORKER_ID}] Processing job ${job.id}: ${job.tool_name}`);
 
     await executeJob(job);
   } catch (err) {
@@ -36,7 +33,7 @@ async function poll() {
 
 async function executeJob(job) {
   const tool = getTool(job.tool_name);
-  
+
   if (!tool) {
     await failJob(job, { message: `Tool ${job.tool_name} not found in registry` });
     return;
@@ -61,7 +58,7 @@ async function executeJob(job) {
     // 4. Execute Handler
     const [domain, method] = job.tool_name.split('.');
     const handlerPath = `./src/handlers/${domain}.js`;
-    
+
     let handler;
     try {
       const module = await import(handlerPath);
@@ -77,7 +74,14 @@ async function executeJob(job) {
       return;
     }
 
-    const result = await handler(job.input);
+    // Execute with timeout from registry
+    const timeoutMs = tool.timeout_ms || 30000;
+    const result = await Promise.race([
+      handler(job.input, { job, tool }),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error(`Handler timeout after ${timeoutMs}ms`)), timeoutMs)
+      )
+    ]);
 
     // 5. Validate Output
     const outputValidation = validateOutput(tool, result.result || result);
@@ -140,10 +144,10 @@ async function failJob(job, error) {
   // Update status
   const { error: statusError } = await supabase
     .from('core_tool_calls')
-    .update({ 
-      status: 'failed', 
+    .update({
+      status: 'failed',
       error,
-      updated_at: new Date().toISOString() 
+      updated_at: new Date().toISOString()
     })
     .eq('id', job.id);
 
@@ -152,7 +156,18 @@ async function failJob(job, error) {
   }
 }
 
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log(`[${WORKER_ID}] Received SIGTERM, shutting down gracefully...`);
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  console.log(`[${WORKER_ID}] Received SIGINT, shutting down gracefully...`);
+  process.exit(0);
+});
+
 // Start the loop
-console.log(`CKR Tool Executor started. Polling every ${POLL_INTERVAL}ms...`);
+console.log(`CKR Tool Executor started. Worker ID: ${WORKER_ID}. Polling every ${POLL_INTERVAL}ms...`);
 setInterval(poll, POLL_INTERVAL);
 poll(); // Initial run
