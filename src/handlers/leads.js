@@ -4,9 +4,16 @@ import { supabase } from '../lib/supabase.js';
  * leads.create - Create a new lead record with minimal required fields
  * Enforces keyed idempotency by phone number
  * Real DB-backed implementation
+ *
+ * Required fields: name, phone, suburb, service
+ * Uses `status` for lead lifecycle (not `stage`)
  */
 export async function create(input, context = {}) {
   const { name, phone, email, suburb, source, notes } = input;
+  // Default service to 'unknown' if not provided
+  const service = input.service || 'unknown';
+  // Default status to 'new' if not provided
+  const status = input.status || 'new';
 
   // Check if lead already exists with this phone (keyed idempotency)
   const { data: existing } = await supabase
@@ -33,9 +40,10 @@ export async function create(input, context = {}) {
       phone,
       email,
       suburb,
+      service,
       source,
       notes,
-      stage: 'new'
+      status
     })
     .select('id')
     .single();
@@ -73,13 +81,14 @@ export async function create(input, context = {}) {
 }
 
 /**
- * leads.update_stage - Update lead pipeline stage
+ * leads.update_stage - Update lead pipeline status
+ * Note: Uses `status` column (not `stage`)
  */
 export async function update_stage(input) {
   const { lead_id, stage, notes } = input;
 
   const updateData = {
-    stage,
+    status: stage, // Map stage param to status column
     updated_at: new Date().toISOString()
   };
 
@@ -93,7 +102,7 @@ export async function update_stage(input) {
     .eq('id', lead_id);
 
   if (error) {
-    throw new Error(`Failed to update lead stage: ${error.message}`);
+    throw new Error(`Failed to update lead status: ${error.message}`);
   }
 
   return {
@@ -182,11 +191,11 @@ export async function add_photos_link(input) {
 export async function schedule_inspection(input) {
   const { lead_id, preferred_window, notes } = input;
 
-  // Update lead stage
+  // Update lead status
   await supabase
     .from('leads')
     .update({
-      stage: 'inspection_scheduled',
+      status: 'inspection_scheduled',
       updated_at: new Date().toISOString()
     })
     .eq('id', lead_id);
@@ -205,7 +214,8 @@ export async function schedule_inspection(input) {
 }
 
 /**
- * leads.list_by_stage - List leads filtered by stage and optional filters
+ * leads.list_by_stage - List leads filtered by status and optional filters
+ * Note: Uses `status` column (not `stage`)
  */
 export async function list_by_stage(input) {
   const { stage, suburb, source, limit = 50 } = input;
@@ -217,7 +227,7 @@ export async function list_by_stage(input) {
     .limit(limit);
 
   if (stage) {
-    query = query.eq('stage', stage);
+    query = query.eq('status', stage); // Map stage param to status column
   }
 
   if (suburb) {
@@ -249,7 +259,7 @@ export async function mark_lost(input) {
   const { error } = await supabase
     .from('leads')
     .update({
-      stage: 'lost',
+      status: 'lost',
       lost_reason: reason,
       notes: notes || null,
       updated_at: new Date().toISOString()
