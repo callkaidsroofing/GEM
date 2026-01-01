@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "description": "Background executor for CKR tool registry and Supabase-backed task processing",
   "engines": {
-    "node": ">=18"
+    "node": "20.x"
   },
   "scripts": {
     "start": "node index.js"
