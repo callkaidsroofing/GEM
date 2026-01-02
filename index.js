@@ -34,13 +34,17 @@ async function poll() {
 async function executeJob(job) {
   const tool = getTool(job.tool_name);
 
+  // 1. Check if tool exists in registry
   if (!tool) {
-    await failJob(job, { message: `Tool ${job.tool_name} not found in registry` });
+    await failJob(job, {
+      error_code: 'unknown_tool',
+      message: `Tool ${job.tool_name} not found in registry`
+    });
     return;
   }
 
   try {
-    // 2. Check Idempotency
+    // 2. Check Idempotency (includes keyed idempotency for key_field tools)
     const existingReceipt = await checkIdempotency(tool, job);
     if (existingReceipt) {
       console.log(`Idempotency hit for job ${job.id}, returning existing receipt`);
@@ -48,15 +52,36 @@ async function executeJob(job) {
       return;
     }
 
-    // 3. Validate Input
+    // 3. Validate Input against registry schema
     const inputValidation = validateInput(tool, job.input);
     if (!inputValidation.valid) {
-      await failJob(job, { message: 'Input validation failed', details: inputValidation.error });
+      await failJob(job, {
+        error_code: 'validation_error',
+        message: 'Input validation failed',
+        details: inputValidation.error
+      });
       return;
     }
 
-    // 4. Execute Handler
-    const [domain, method] = job.tool_name.split('.');
+    // 4. Check keyed idempotency key_field requirement
+    if (tool.idempotency?.mode === 'keyed' && tool.idempotency?.key_field) {
+      const keyField = tool.idempotency.key_field;
+      if (!job.input[keyField]) {
+        await failJob(job, {
+          error_code: 'validation_error',
+          message: `Missing required key field for keyed idempotency: ${keyField}`,
+          details: { key_field: keyField }
+        });
+        return;
+      }
+    }
+
+    // 5. Resolve handler
+    // Pattern: tool_name = "domain.method" or "domain.subdomain.action"
+    // Handler: src/handlers/<domain>.js, export <method> or <subdomain_action>
+    const parts = job.tool_name.split('.');
+    const domain = parts[0];
+    const method = parts.slice(1).join('_'); // e.g., "google_drive.search" → "google_drive_search"
     const handlerPath = `./src/handlers/${domain}.js`;
 
     let handler;
@@ -68,13 +93,15 @@ async function executeJob(job) {
     }
 
     if (!handler) {
-      // Every tool must be executable, even if some return not_configured
-      console.warn(`Handler for ${job.tool_name} not implemented, returning not_configured`);
-      await succeedJob(job, { status: 'not_configured', message: `Handler for ${job.tool_name} not implemented` }, {});
+      // Tool exists in registry but no handler - this is an implementation gap
+      await failJob(job, {
+        error_code: 'unknown_tool',
+        message: `Handler export '${method}' not found in ${handlerPath}`
+      });
       return;
     }
 
-    // Execute with timeout from registry
+    // 6. Execute with timeout from registry
     const timeoutMs = tool.timeout_ms || 30000;
     const result = await Promise.race([
       handler(job.input, { job, tool }),
@@ -83,18 +110,65 @@ async function executeJob(job) {
       )
     ]);
 
-    // 5. Validate Output
-    const outputValidation = validateOutput(tool, result.result || result);
+    // 7. Check for not_configured status in result
+    const resultObj = result.result || result;
+    if (resultObj.status === 'not_configured') {
+      // Write receipt with not_configured status
+      await writeNotConfiguredReceipt(job, resultObj);
+      return;
+    }
+
+    // 8. Validate Output
+    const outputValidation = validateOutput(tool, resultObj);
     if (!outputValidation.valid) {
       console.warn(`Output validation failed for ${job.tool_name}:`, outputValidation.error);
     }
 
-    // 6. Write Receipt and Update Status
-    await succeedJob(job, result.result || result, result.effects || {});
+    // 9. Write Receipt and Update Status
+    await succeedJob(job, resultObj, result.effects || {});
 
   } catch (err) {
     console.error(`Error executing job ${job.id}:`, err);
-    await failJob(job, { message: err.message, stack: err.stack });
+    await failJob(job, {
+      error_code: err.code || 'execution_error',
+      message: err.message,
+      details: err.details || {}
+    });
+  }
+}
+
+/**
+ * Write a not_configured receipt - tool executed but is not yet configured
+ */
+async function writeNotConfiguredReceipt(job, result) {
+  // Write receipt with not_configured status
+  const { error: receiptError } = await supabase
+    .from('core_tool_receipts')
+    .insert({
+      call_id: job.id,
+      tool_name: job.tool_name,
+      status: 'not_configured',
+      result: {
+        status: 'not_configured',
+        reason: result.reason || `Tool ${job.tool_name} is not yet configured`,
+        required_env: result.required_env || [],
+        next_steps: result.next_steps || []
+      },
+      effects: {}
+    });
+
+  if (receiptError) {
+    console.error(`Error writing not_configured receipt for job ${job.id}:`, receiptError);
+  }
+
+  // Update call status to not_configured
+  const { error: statusError } = await supabase
+    .from('core_tool_calls')
+    .update({ status: 'not_configured', updated_at: new Date().toISOString() })
+    .eq('id', job.id);
+
+  if (statusError) {
+    console.error(`Error updating not_configured status for job ${job.id}:`, statusError);
   }
 }
 
