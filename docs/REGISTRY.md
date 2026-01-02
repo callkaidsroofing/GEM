@@ -2,6 +2,9 @@
 
 The registry (`tools.registry.json`) is the single source of truth for all tool definitions in CKR-CORE.
 
+> **For current implementation status of each tool, see `registry_coverage.md`.**
+> That file is generated and shows which tools are real vs not_configured.
+
 ## Registry Structure
 
 ```json

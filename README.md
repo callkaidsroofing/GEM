@@ -51,34 +51,21 @@ VALUES ('os.create_task', '{"title": "Test task", "domain": "business"}', 'queue
 SELECT * FROM core_tool_receipts ORDER BY created_at DESC LIMIT 1;
 ```
 
-## Core Concepts
-
-### Registry-Driven
-All tools are defined in `tools.registry.json`. The registry is the contract.
-
-### Three Outcome States
-Every tool execution produces exactly one of:
-- `succeeded` - Real execution with effects
-- `failed` - Error with details
-- `not_configured` - Tool exists but requires setup
-
-### Idempotency
-- `none` - Always execute
-- `safe-retry` - Return existing receipt for same call
-- `keyed` - Prevent duplicates based on key field
-
 ## Documentation
 
-See `/docs` for detailed documentation:
-- `SYSTEM.md` - System overview
-- `INTENT.md` - Current development focus
-- `CONSTRAINTS.md` - Non-negotiable rules
-- `STATE.md` - Current implementation status
-- `REGISTRY.md` - How tools work
+All system documentation lives in `/docs`. Read in this order:
+
+1. **`SYSTEM.md`** - What GEM/CKR-CORE is (and isn't)
+2. **`INTENT.md`** - Current development phase and focus
+3. **`CONSTRAINTS.md`** - Non-negotiable rules
+4. **`STATE.md`** - What exists today, what's next
+
+Reference docs:
+- `REGISTRY.md` - How tools and idempotency work
 - `AGENTS.md` - Guidelines for AI coding agents
-- `PLATFORMS.md` - Deployment environments
-- `DECISIONS.md` - Architectural decisions
-- `registry_coverage.md` - Tool coverage report
+- `PLATFORMS.md` - Render and Supabase deployment
+- `DECISIONS.md` - Architectural decisions (locked)
+- `registry_coverage.md` - Generated tool coverage report
 
 ## Deployment
 

@@ -2,6 +2,21 @@
 
 This document reflects operational truth as of the last update.
 
+## Phase Status
+
+**Phase 1B: COMPLETE** (Registry Coverage)
+
+All 87 tools in `tools.registry.json` are executable without crashing.
+Every call produces exactly one receipt.
+Only three terminal states: `succeeded`, `failed`, `not_configured`.
+
+See `registry_coverage.md` for authoritative tool-by-tool status.
+
+**Next: Phase 1C** (Provider Integration)
+- Configure SMS provider (Twilio)
+- Configure email provider (SendGrid)
+- Execute pending table migrations
+
 ## Tables (Verified to Exist)
 
 ### Core System Tables

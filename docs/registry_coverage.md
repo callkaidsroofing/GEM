@@ -2,6 +2,12 @@
 
 Generated from `tools.registry.json` v1.0.0
 
+> **This file is generated from `tools.registry.json` and handler exports.**
+> **Do not edit by hand.**
+>
+> Regenerate this file whenever `tools.registry.json` or handlers change.
+> Review handler files in `src/handlers/` to determine real vs not_configured status.
+
 ## Coverage Summary
 
 | Status | Count |

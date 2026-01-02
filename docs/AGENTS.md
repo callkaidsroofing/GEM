@@ -55,6 +55,23 @@ This document governs how AI coding agents must behave when working on GEM/CKR-C
 - Update `registry_coverage.md` after implementing tools
 - Test with verification INSERTs
 
+## Documentation Update Rule (Non-Negotiable)
+
+Any change that:
+- Alters tool behaviour
+- Changes registry coverage
+- Adds or removes real implementations
+- Advances or closes a development phase
+
+**Must update at least one of:**
+- `docs/STATE.md`
+- `docs/INTENT.md`
+- `docs/DECISIONS.md`
+
+**Code changes without documentation updates are considered incomplete.**
+
+This rule enforces continuous relevance of the documentation system.
+
 ## Implementing a New Tool
 
 1. Check registry for tool definition
