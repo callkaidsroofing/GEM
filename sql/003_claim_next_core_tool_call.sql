@@ -10,10 +10,10 @@ DECLARE
     v_claimed_id UUID;
 BEGIN
     -- Select and lock the oldest queued job
-    SELECT id INTO v_claimed_id
-    FROM public.core_tool_calls
-    WHERE status = 'queued'
-    ORDER BY created_at ASC
+    SELECT c.id INTO v_claimed_id
+    FROM public.core_tool_calls AS c
+    WHERE c.status = 'queued'
+    ORDER BY c.created_at ASC
     LIMIT 1
     FOR UPDATE SKIP LOCKED;
 
@@ -23,19 +23,19 @@ BEGIN
     END IF;
 
     -- Update the job to running status
-    UPDATE public.core_tool_calls
+    UPDATE public.core_tool_calls AS c
     SET
         status = 'running',
         claimed_at = NOW(),
-        worker_id = p_worker_id,
+        claimed_by = p_worker_id,
         updated_at = NOW()
-    WHERE id = v_claimed_id;
+    WHERE c.id = v_claimed_id;
 
     -- Return the claimed row
     RETURN QUERY
     SELECT *
-    FROM public.core_tool_calls
-    WHERE id = v_claimed_id;
+    FROM public.core_tool_calls AS c
+    WHERE c.id = v_claimed_id;
 END;
 $$;
 
@@ -55,9 +55,9 @@ BEGIN
         SELECT 1 FROM information_schema.columns
         WHERE table_schema = 'public'
         AND table_name = 'core_tool_calls'
-        AND column_name = 'worker_id'
+        AND column_name = 'claimed_by'
     ) THEN
-        ALTER TABLE public.core_tool_calls ADD COLUMN worker_id TEXT;
+        ALTER TABLE public.core_tool_calls ADD COLUMN claimed_by TEXT;
     END IF;
 END;
 $$;

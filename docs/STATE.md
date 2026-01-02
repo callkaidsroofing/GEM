@@ -20,8 +20,8 @@ See `registry_coverage.md` for authoritative tool-by-tool status.
 ## Tables (Verified to Exist)
 
 ### Core System Tables
-- `core_tool_calls` - Tool invocation queue
-- `core_tool_receipts` - Execution receipts
+- `core_tool_calls` - Tool invocation queue (Stabilized with `claimed_by`, `claimed_at`)
+- `core_tool_receipts` - Execution receipts (Stabilized)
 
 ### Domain Tables
 - `notes` - OS notes
@@ -68,11 +68,11 @@ See `registry_coverage.md` for authoritative tool-by-tool status.
 ### Not Configured (Stub Implementation)
 All remaining tools in registry return structured `not_configured` responses.
 
-## Worker Status
+#### Worker Status
 
-- **Worker loop**: Running on Render
-- **Atomic claim RPC**: `claim_next_core_tool_call`
-- **Poll interval**: 5000ms default
+- `worker_loop`: Running on Render
+- `atomic_claim_rpc`: `claim_next_core_tool_call` (Stabilized with explicit aliases and qualified columns)
+- `poll_interval`: 5000ms defaultault
 
 ## Known Gaps
 

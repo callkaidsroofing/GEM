@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS public.core_tool_calls (
     status TEXT NOT NULL DEFAULT 'queued' CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'not_configured')),
     idempotency_key TEXT,
     error JSONB,
+    claimed_at TIMESTAMPTZ,
+    claimed_by TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

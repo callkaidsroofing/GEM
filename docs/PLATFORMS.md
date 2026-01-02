@@ -36,7 +36,7 @@ Environment variables (set in Render dashboard):
 - `entities`, `jobs`, `invoices`, `comms_log` (pending migration)
 
 ### RPC Functions
-- `claim_next_core_tool_call(p_worker_id)` - Atomic job claim
+- `claim_next_core_tool_call(p_worker_id)` - Atomic job claim (Updates `claimed_by`, `claimed_at`)
 
 ### Access
 - Worker uses service role key
