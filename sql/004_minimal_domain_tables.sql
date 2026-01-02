@@ -48,8 +48,9 @@ CREATE TABLE IF NOT EXISTS public.leads (
     phone TEXT NOT NULL,
     email TEXT,
     suburb TEXT NOT NULL,
+    service TEXT DEFAULT 'unknown',
     source TEXT CHECK (source IN ('gmb', 'google_ads', 'meta', 'referral', 'repeat', 'other')),
-    stage TEXT NOT NULL DEFAULT 'new' CHECK (stage IN ('new', 'contacted', 'inspection_scheduled', 'quoted', 'won', 'lost')),
+    status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'contacted', 'inspection_scheduled', 'quoted', 'won', 'lost')),
     notes TEXT,
     lost_reason TEXT,
     photo_links JSONB DEFAULT '[]',
@@ -59,7 +60,7 @@ CREATE TABLE IF NOT EXISTS public.leads (
 
 -- Unique constraint on phone for keyed idempotency
 CREATE UNIQUE INDEX IF NOT EXISTS idx_leads_phone_unique ON public.leads (phone);
-CREATE INDEX IF NOT EXISTS idx_leads_stage ON public.leads (stage);
+CREATE INDEX IF NOT EXISTS idx_leads_status ON public.leads (status);
 CREATE INDEX IF NOT EXISTS idx_leads_suburb ON public.leads (suburb);
 
 -- ============================================

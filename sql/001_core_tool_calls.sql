@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS public.core_tool_calls (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tool_name TEXT NOT NULL,
     input JSONB NOT NULL DEFAULT '{}',
-    status TEXT NOT NULL DEFAULT 'queued' CHECK (status IN ('queued', 'running', 'succeeded', 'failed')),
+    status TEXT NOT NULL DEFAULT 'queued' CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'not_configured')),
     idempotency_key TEXT,
     error JSONB,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
