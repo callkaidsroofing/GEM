@@ -6,13 +6,18 @@ This document reflects operational truth as of the last update.
 
 **Phase 1B: COMPLETE** (Registry Coverage)
 
-All 87 tools in `tools.registry.json` are executable without crashing.
+All 99 tools in `tools.registry.json` are executable without crashing.
 Every call produces exactly one receipt.
 Only three terminal states: `succeeded`, `failed`, `not_configured`.
 
 See `registry_coverage.md` for authoritative tool-by-tool status.
 
-**Next: Phase 1C** (Provider Integration)
+**Current: Phase 2** (Documentation Lock-in + Controlled Expansion)
+- Documentation accuracy verified and locked
+- Coverage generator script added (`scripts/analyze-coverage.js`)
+- Ready for controlled tool expansion (one tool at a time)
+
+**Next: Phase 1C** (Provider Integration) - Deferred
 - Configure SMS provider (Twilio)
 - Configure email provider (SendGrid)
 - Execute pending table migrations
@@ -38,41 +43,43 @@ See `registry_coverage.md` for authoritative tool-by-tool status.
 
 ## Handler Status
 
-### Real DB Implementation
-| Handler | Status |
-|---------|--------|
-| os.create_note | Real |
-| os.search_notes | Real |
-| os.create_task | Real |
-| os.complete_task | Real |
-| os.list_tasks | Real |
-| os.health_check | Real |
-| leads.create | Real (keyed) |
-| leads.update_stage | Real |
-| leads.list_by_stage | Real |
-| quote.create_from_inspection | Real |
-| quote.calculate_totals | Real |
-| entity.create | Real |
-| entity.update | Real |
-| entity.search | Real |
-| entity.get | Real |
-| job.create_from_accepted_quote | Real |
-| job.assign_dates | Real |
-| job.complete | Real |
-| comms.log_call_outcome | Real |
-| comms.create_followup_task_from_message | Real |
-| invoice.create_from_job | Real |
-| invoice.add_payment | Real |
-| invoice.mark_overdue | Real |
+### Real DB Implementation (40 tools)
 
-### Not Configured (Stub Implementation)
+**OS Domain (13 real):**
+- os.health_check, os.get_state_snapshot, os.refresh_state_snapshot
+- os.create_note, os.search_notes
+- os.create_task, os.update_task, os.complete_task, os.defer_task, os.list_tasks
+- os.create_reminder, os.audit_log_search, os.rollback_last_action
+
+**Entity Domain (4 real):**
+- entity.create, entity.update, entity.search, entity.get
+
+**Leads Domain (7 real):**
+- leads.create (keyed by phone), leads.update_stage, leads.add_source
+- leads.add_photos_link, leads.schedule_inspection, leads.list_by_stage, leads.mark_lost
+
+**Quote Domain (7 real):**
+- quote.create_from_inspection, quote.update_line_items, quote.calculate_totals
+- quote.generate_pdf, quote.send_to_client, quote.mark_accepted, quote.mark_declined
+
+**Job Domain (4 real):**
+- job.create_from_accepted_quote, job.assign_dates, job.add_site_notes, job.complete
+
+**Invoice Domain (3 real):**
+- invoice.create_from_job, invoice.add_payment, invoice.mark_overdue
+
+**Comms Domain (2 real):**
+- comms.log_call_outcome, comms.create_followup_task_from_message
+
+### Not Configured (59 tools)
 All remaining tools in registry return structured `not_configured` responses.
+See `registry_coverage.md` for the complete list with required providers.
 
-#### Worker Status
+## Worker Status
 
 - `worker_loop`: Running on Render
 - `atomic_claim_rpc`: `claim_next_core_tool_call` (Stabilized with explicit aliases and qualified columns)
-- `poll_interval`: 5000ms defaultault
+- `poll_interval`: 5000ms default
 
 ## Known Gaps
 
@@ -84,3 +91,4 @@ All remaining tools in registry return structured `not_configured` responses.
 ---
 
 *This document updates frequently as implementation progresses.*
+*Last updated: 2026-01-03*

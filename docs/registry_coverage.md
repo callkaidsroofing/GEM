@@ -5,16 +5,16 @@ Generated from `tools.registry.json` v1.0.0
 > **This file is generated from `tools.registry.json` and handler exports.**
 > **Do not edit by hand.**
 >
-> Regenerate this file whenever `tools.registry.json` or handlers change.
+> Regenerate with: `node scripts/analyze-coverage.js`
 > Review handler files in `src/handlers/` to determine real vs not_configured status.
 
 ## Coverage Summary
 
 | Status | Count |
 |--------|-------|
-| Real Implementation | 24 |
-| Not Configured | 63 |
-| **Total** | **87** |
+| Real Implementation | 40 |
+| Not Configured | 59 |
+| **Total** | **99** |
 
 **Coverage: 100%** - All tools have executable handlers.
 
@@ -100,7 +100,7 @@ Generated from `tools.registry.json` v1.0.0
 | quote.mark_accepted | real | safe-retry | quotes |
 | quote.mark_declined | real | safe-retry | quotes |
 
-### job (10 tools)
+### job (9 tools)
 
 | Tool | Status | Idempotency | Tables Touched |
 |------|--------|-------------|----------------|
@@ -114,7 +114,7 @@ Generated from `tools.registry.json` v1.0.0
 | job.generate_warranty_certificate | not_configured | safe-retry | - |
 | job.request_review | not_configured | safe-retry | - |
 
-### invoice (7 tools)
+### invoice (6 tools)
 
 | Tool | Status | Idempotency | Tables Touched |
 |------|--------|-------------|----------------|
@@ -153,7 +153,7 @@ Generated from `tools.registry.json` v1.0.0
 | calendar.cancel_event | not_configured | safe-retry | - |
 | calendar.attach_job_to_event | not_configured | safe-retry | - |
 
-### media (7 tools)
+### media (6 tools)
 
 | Tool | Status | Idempotency | Tables Touched |
 |------|--------|-------------|----------------|
@@ -261,3 +261,4 @@ Generated from `tools.registry.json` v1.0.0
 ---
 
 *This report is generated from the registry and reflects current implementation status.*
+*Last updated: 2026-01-03*
