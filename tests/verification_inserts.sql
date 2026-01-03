@@ -176,6 +176,61 @@ INSERT INTO core_tool_calls (id, tool_name, input, status) VALUES (
 -- That's expected behavior - demonstrates referential integrity
 
 -- ============================================================================
+-- TEST 11: Real tool - inspection.create
+-- Expected: status=succeeded, receipt with inspection_id
+-- Prerequisite: Run TEST 3 first to create a lead, or use lead_id from leads table
+-- ============================================================================
+-- First ensure we have a lead to reference
+INSERT INTO core_tool_calls (id, tool_name, input, status) VALUES (
+  'test-011-lead-for-inspection',
+  'leads.create',
+  '{"name": "Inspection Test Lead", "phone": "0400000011", "suburb": "InspectionSuburb", "source": "referral"}',
+  'queued'
+);
+
+-- Wait for lead creation, then create inspection (use static UUID for testing)
+-- In real usage, you'd get the lead_id from the receipt
+INSERT INTO core_tool_calls (id, tool_name, input, status) VALUES (
+  'test-011-inspection-create',
+  'inspection.create',
+  '{"lead_id": "REPLACE_WITH_LEAD_ID", "site_address": "123 Test Street, InspectionSuburb", "notes": "Test inspection for verification"}',
+  'queued'
+);
+
+-- Verification:
+-- 1. Get lead_id: SELECT id FROM leads WHERE phone = '0400000011';
+-- 2. Update the inspection call with real lead_id
+-- 3. Check receipt: SELECT * FROM core_tool_receipts WHERE call_id = 'test-011-inspection-create';
+-- 4. Check inspections: SELECT * FROM inspections ORDER BY created_at DESC LIMIT 1;
+-- Expected: New inspection created, status = 'open', receipt with inspection_id
+
+-- ============================================================================
+-- TEST 12: Real tool - inspection.lock
+-- Expected: status=succeeded, locked=true
+-- Prerequisite: Run TEST 11 first to create an inspection
+-- ============================================================================
+INSERT INTO core_tool_calls (id, tool_name, input, status) VALUES (
+  'test-012-inspection-lock',
+  'inspection.lock',
+  '{"inspection_id": "REPLACE_WITH_INSPECTION_ID"}',
+  'queued'
+);
+
+-- Verification:
+-- 1. Get inspection_id from TEST 11
+-- 2. Update the lock call with real inspection_id
+-- 3. Check receipt: SELECT * FROM core_tool_receipts WHERE call_id = 'test-012-inspection-lock';
+-- 4. Check inspection status: SELECT * FROM inspections WHERE id = 'INSPECTION_ID';
+-- Expected: Inspection status = 'locked', locked_at populated
+
+-- ============================================================================
+-- TEST 13: inspection.lock idempotency (already locked)
+-- Expected: status=succeeded, locked=true, no db_writes (already locked)
+-- ============================================================================
+-- Run test-012 again with same inspection_id
+-- Expected: Should succeed without error, effects.db_writes should be empty
+
+-- ============================================================================
 -- VERIFICATION QUERIES
 -- ============================================================================
 

@@ -35,6 +35,7 @@ See `registry_coverage.md` for authoritative tool-by-tool status.
 - `jobs` - Job records (migrations/002)
 - `invoices` - Invoice records (migrations/003)
 - `comms_log` - Communication log (migrations/004)
+- `inspections` - Inspection records (migrations/005)
 
 ## Handler Status
 
@@ -64,6 +65,8 @@ See `registry_coverage.md` for authoritative tool-by-tool status.
 | invoice.create_from_job | Real |
 | invoice.add_payment | Real |
 | invoice.mark_overdue | Real |
+| inspection.create | Real |
+| inspection.lock | Real |
 
 ### Not Configured (Stub Implementation)
 All remaining tools in registry return structured `not_configured` responses.
