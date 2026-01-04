@@ -1,5 +1,7 @@
 # GEM Brain Runbook
 
+> For system overview, see `/docs/SYSTEM.md`. For deployment context, see `/docs/PLATFORMS.md`.
+
 ## Prerequisites
 
 - Node.js 20+

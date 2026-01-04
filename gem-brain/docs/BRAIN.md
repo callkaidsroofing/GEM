@@ -1,5 +1,7 @@
 # GEM Brain
 
+> For system overview, see `/docs/SYSTEM.md`. For constraints, see `/docs/CONSTRAINTS.md`.
+
 The Brain is the AI interaction layer for GEM. It translates natural language messages into registry-valid tool calls, enqueues them to Supabase, and optionally waits for execution receipts.
 
 ## Architecture
