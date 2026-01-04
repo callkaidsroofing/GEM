@@ -77,16 +77,15 @@ Generated from `tools.registry.json` v1.0.0
 | leads.mark_lost | real | safe-retry | leads |
 
 ### inspection (7 tools)
-
 | Tool | Status | Idempotency | Tables Touched |
 |------|--------|-------------|----------------|
-| inspection.create | not_configured | none | - |
+| inspection.create | real | none | inspections |
 | inspection.add_checklist_item | not_configured | none | - |
 | inspection.add_measurement | not_configured | none | - |
 | inspection.add_photo_ref | not_configured | none | - |
 | inspection.add_defect | not_configured | none | - |
 | inspection.generate_scope_summary | not_configured | safe-retry | - |
-| inspection.lock | not_configured | safe-retry | - |
+| inspection.lock | real | safe-retry | inspections |
 
 ### quote (7 tools)
 
@@ -165,7 +164,6 @@ Generated from `tools.registry.json` v1.0.0
 | media.export_website_pack | not_configured | safe-retry | - |
 
 ### marketing (6 tools)
-
 | Tool | Status | Idempotency | Tables Touched |
 |------|--------|-------------|----------------|
 | marketing.generate_meta_ad_pack | not_configured | safe-retry | - |
@@ -241,7 +239,11 @@ Generated from `tools.registry.json` v1.0.0
 
 ### Requires Additional Tables
 - identity.* - memory_primitives, identity_model tables
-- inspection.* - inspections, inspection_items tables
+- inspection.add_checklist_item - inspection_items table
+- inspection.add_measurement - inspection_measurements table
+- inspection.add_photo_ref - inspection_photos table
+- inspection.add_defect - inspection_defects table
+- inspection.generate_scope_summary - AI composition service
 - media.* - media_assets table
 - personal.check_in - checkins table
 - personal.create_commitment - commitments table
@@ -249,6 +251,7 @@ Generated from `tools.registry.json` v1.0.0
 ---
 
 ## Keyed Idempotency Tools
+
 
 | Tool | Key Field |
 |------|-----------|
@@ -261,4 +264,4 @@ Generated from `tools.registry.json` v1.0.0
 ---
 
 *This report is generated from the registry and reflects current implementation status.*
-*Last updated: 2026-01-03*
+*Last updated: 2026-01-05*

@@ -50,23 +50,25 @@ See `gem-core/docs/registry_coverage.md` for tool-by-tool breakdown.
 - `notes`, `tasks`, `leads`, `quotes`, `quote_line_items`
 
 ### Migrations Pending
+
 - `entities` (gem-core/migrations/001)
 - `jobs` (gem-core/migrations/002)
 - `invoices` (gem-core/migrations/003)
 - `comms_log` (gem-core/migrations/004)
+- `inspections` (gem-core/migrations/005)
 
 ## Services Status
 
 ### GEM-CORE Executor
 - Worker loop: polls every 5000ms
-- Atomic claim via `claim_next_core_tool_call` RPC
+- Atomic claim via `claim_next_core_tool_call` RPC (queue → claim RPC → handler → receipt)
 - All handlers export from `src/handlers/<domain>.js`
 
 ### GEM Brain
 - HTTP: `POST /brain/run`
 - CLI: `node scripts/brain.js`
 - Modes: answer, plan, enqueue, enqueue_and_wait
-- Rules-first planner (no LLM required)
+- Rules-first planner (planner → enqueue calls → optional receipt wait → brain_runs logging)
 
 ## Known Gaps
 
@@ -77,4 +79,4 @@ See `gem-core/docs/registry_coverage.md` for tool-by-tool breakdown.
 
 ---
 
-*Last updated: 2026-01-04*
+*Last updated: 2026-01-05*
