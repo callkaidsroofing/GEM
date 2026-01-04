@@ -1,71 +1,61 @@
-# GEM / CKR-CORE System Overview
+# GEM System
 
-## What is GEM?
+GEM (General Execution Manager) is a registry-driven tool execution system for Call Kaids Roofing. Two services run on Render, both backed by Supabase.
 
-GEM (General Execution Manager) is a cloud-hosted, registry-driven execution system designed to reliably perform business actions for Call Kaids Roofing via deterministic tool contracts.
+## Services
 
-## What is CKR-CORE?
+### GEM-CORE Executor (`/gem-core`)
+- Render background worker
+- Polls `core_tool_calls` queue
+- Executes handlers from `tools.registry.json`
+- Writes receipts to `core_tool_receipts`
+- Start: `node index.js`
 
-CKR-CORE is the execution engine inside GEM. It is:
+### GEM Brain (`/gem-brain`)
+- Render web service
+- Translates messages to tool calls via rules-first planner
+- Validates against registry before enqueueing
+- HTTP API: `POST /brain/run`
+- CLI: `node scripts/brain.js`
+- Start: `npm start`
 
-- **A background worker** - Not an API server, not a UI, not a chat interface
-- **Registry-driven** - All tools are defined in `tools.registry.json`
-- **Database-authoritative** - Supabase is the single source of truth
-- **Receipt-enforced** - Every tool execution produces exactly one receipt
-- **Idempotent by design** - Safe retries and keyed deduplication built-in
-
-## What This System Is NOT
-
-- A user interface
-- An API server
-- An agent chat interface
-- A workflow designer
-- A frontend application
-
-## Core Principles
-
-1. **Registry is law** - Tool definitions in `tools.registry.json` are the contract
-2. **No fake success** - Every tool returns real status (succeeded, failed, not_configured)
-3. **Exactly one receipt per call** - Audit trail is complete and deterministic
-4. **Idempotency guarantees** - Safe retries, no duplicate effects
-5. **Worker loop stability** - Individual tool failures never crash the worker
-
-## Architecture
+## Data Flow
 
 ```
-┌─────────────────────┐
-│  core_tool_calls    │  ← Enqueued tool invocations
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│  CKR-CORE Worker    │  ← Claims, executes, writes receipts
-│  (index.js)         │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│  core_tool_receipts │  ← Execution results and effects
-└─────────────────────┘
+Message → Brain → core_tool_calls → Executor → core_tool_receipts
 ```
 
-## Tool Execution Flow
+Brain enqueues. Executor executes. Both use Supabase.
 
-1. Tool call is inserted into `core_tool_calls` with status `queued`
-2. Worker claims the call atomically via RPC
-3. Worker validates input against registry schema
-4. Worker checks idempotency (safe-retry or keyed)
-5. Worker executes handler
-6. Worker writes receipt to `core_tool_receipts`
-7. Worker updates call status (succeeded, failed, not_configured)
+## Core Tables
 
-## Deployment
+| Table | Purpose |
+|-------|---------|
+| `core_tool_calls` | Queue of pending/running/completed calls |
+| `core_tool_receipts` | Execution results (one per call) |
+| `brain_runs` | Brain request/response audit log |
 
-- **Runtime**: Node.js 20.x (ESM)
-- **Host**: Render (background worker)
-- **Database**: Supabase (PostgreSQL)
-- **Configuration**: Environment variables only (no dotenv)
+## Contract
 
----
+Every tool call produces exactly one receipt with status:
+- `succeeded` - Real execution completed
+- `failed` - Error occurred
+- `not_configured` - Tool exists but needs setup
 
-*This document defines system identity and rarely changes.*
+No silent success. No missing receipts.
+
+## Registry
+
+`gem-core/tools.registry.json` defines all 99 tools:
+- Names, schemas, idempotency rules
+- 40 have real implementations
+- 59 return `not_configured`
+
+Registry is read-only at runtime. Do not modify.
+
+## Boundaries
+
+- Executor has no HTTP server
+- Brain has no tool execution logic
+- Termux/frontend_bridge.py is a separate system (not in this repo)
+- All communication via Supabase tables

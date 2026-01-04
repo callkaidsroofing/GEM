@@ -1,6 +1,8 @@
 # Verification Guide
 
-To verify that the CKR-CORE Tool Executor is stabilized and working correctly, follow these steps:
+> For system overview, see `/docs/SYSTEM.md`. For project state, see `/docs/STATE.md`.
+
+Verify that the executor is working correctly:
 
 ## 1. Database Verification
 

@@ -1,71 +1,69 @@
-# Absolute Constraints
+# Constraints
 
-These are non-negotiable rules. Violating any is a hard failure.
+Hard rules. Violating any is a failure.
 
-## Registry Constraints
+## Registry
 
-- **DO NOT** rename, alter, or "clean up" registry tool names
-- **DO NOT** alter registry schemas
-- **DO NOT** modify `tools.registry.json` except to read it
-- Registry is law - tool definitions are the contract
+- DO NOT rename or alter tool names in `tools.registry.json`
+- DO NOT modify tool schemas
+- DO NOT change idempotency definitions
+- Registry is read-only at runtime
 
-## Architecture Constraints
+## Architecture
 
-- **DO NOT** add a web server
-- **DO NOT** add external providers (Twilio, SendGrid, Google APIs, Ads APIs, Analytics APIs)
-- **DO NOT** hardcode secrets or introduce dotenv
-- **DO NOT** modify `frontend_bridge.py` or any local Termux code
+- DO NOT add HTTP server to executor
+- DO NOT add external providers without explicit approval
+- DO NOT hardcode secrets
+- DO NOT use dotenv in production
+- DO NOT modify Termux/frontend_bridge.py (separate system)
 
-## Execution Constraints
+## Execution
 
-- **DO NOT** "fake success" - every tool returns real status
-- **DO NOT** skip receipts - exactly one receipt per call
-- **DO NOT** crash the worker loop - individual failures are isolated
-- **DO NOT** return empty receipts or ambiguous status
+- Every tool call produces exactly one receipt
+- Status must be: succeeded, failed, or not_configured
+- No silent success
+- No empty receipts
+- Individual failures must not crash worker loop
 
-## Idempotency Constraints
+## Idempotency
 
-- Keyed tools must never create duplicates
-- Key field missing on keyed tool = validation failure
-- Safe-retry must return existing receipt, not re-execute
+- `none`: Always execute
+- `safe-retry`: Return existing receipt for same key
+- `keyed`: Prevent duplicate domain rows
 
 ## Receipt Contract
-
-Every processed call must write exactly one receipt with this structure:
 
 ```json
 {
   "status": "succeeded | failed | not_configured",
-  "result": { ... },
-  "effects": { ... }
+  "result": {},
+  "effects": {}
 }
 ```
 
-For `not_configured` status:
-
+For not_configured:
 ```json
 {
   "status": "not_configured",
   "reason": "string",
-  "required_env": ["string"],
-  "next_steps": ["string"]
+  "required_env": [],
+  "next_steps": []
 }
 ```
 
-## Dispatch Pattern (Fixed)
+## Handler Dispatch
 
 ```
 tool_name = "domain.method"
-→ handler file: src/handlers/<domain>.js
-→ exported function: <method>
+→ file: gem-core/src/handlers/<domain>.js
+→ export: <method>
 ```
 
-For multi-part names (e.g., `integrations.google_drive.search`):
-```
-→ handler file: src/handlers/integrations.js
-→ exported function: google_drive_search
-```
+Multi-part: `integrations.google_drive.search` → `google_drive_search`
 
----
+## Brain
 
-*This document defines hard guardrails and should rarely change.*
+- Only enqueue tools from registry
+- Validate input before enqueueing
+- Never fake execution
+- Fall back to answer mode if no rules match

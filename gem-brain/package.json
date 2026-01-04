@@ -1,0 +1,19 @@
+{
+  "name": "gem-brain",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "AI Brain layer for GEM - translates messages into registry-valid tool calls",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "brain": "node scripts/brain.js",
+    "verify": "node --check src/server.js && node --check scripts/brain.js && echo 'All syntax checks passed'"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
+    "fastify": "^4.28.0"
+  }
+}

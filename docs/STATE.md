@@ -1,89 +1,82 @@
 # Current State
 
-This document reflects operational truth as of the last update.
+This document is the canonical source for "where we are".
 
 ## Phase Status
 
-**Phase 1B: COMPLETE** (Registry Coverage)
+| Phase | Status | Summary |
+|-------|--------|---------|
+| 1B Registry Coverage | COMPLETE | 99 tools, all produce receipts |
+| 2A Brain MVP | COMPLETE | Rules planner, API, CLI, brain_runs table |
+| 2B Controlled Expansion | CURRENT | One tool at a time, docs locked |
+| 1C Provider Integration | DEFERRED | Twilio, SendGrid, Google APIs |
 
-All 87 tools in `tools.registry.json` are executable without crashing.
-Every call produces exactly one receipt.
-Only three terminal states: `succeeded`, `failed`, `not_configured`.
+## Repository Structure
 
-See `registry_coverage.md` for authoritative tool-by-tool status.
+```
+/
+├── docs/              # Canonical system documentation (this)
+├── gem-core/          # Executor (Render background worker)
+├── gem-brain/         # Brain (Render web service)
+└── README.md
+```
 
-**Next: Phase 1C** (Provider Integration)
-- Configure SMS provider (Twilio)
-- Configure email provider (SendGrid)
-- Execute pending table migrations
+## Tool Coverage
 
-## Tables (Verified to Exist)
+- **Total tools**: 99
+- **Real implementation**: 40
+- **Not configured**: 59
 
-### Core System Tables
-- `core_tool_calls` - Tool invocation queue (Stabilized with `claimed_by`, `claimed_at`)
-- `core_tool_receipts` - Execution receipts (Stabilized)
+See `gem-core/docs/registry_coverage.md` for tool-by-tool breakdown.
 
-### Domain Tables
-- `notes` - OS notes
-- `tasks` - OS tasks
-- `leads` - Lead records
-- `quotes` - Quote records
-- `quote_line_items` - Quote line items
+### Real Implementations by Domain
 
-### Tables to Create (Migrations Pending)
-- `entities` - Entity records (migrations/001)
-- `jobs` - Job records (migrations/002)
-- `invoices` - Invoice records (migrations/003)
-- `comms_log` - Communication log (migrations/004)
-- `inspections` - Inspection records (migrations/005)
+| Domain | Count | Examples |
+|--------|-------|----------|
+| os | 13 | health_check, create_task, create_note |
+| leads | 7 | create (keyed), update_stage, list_by_stage |
+| quote | 7 | create_from_inspection, calculate_totals |
+| entity | 4 | create, update, search, get |
+| job | 4 | create_from_accepted_quote, complete |
+| invoice | 3 | create_from_job, add_payment |
+| comms | 2 | log_call_outcome |
 
-## Handler Status
+## Database Tables
 
-### Real DB Implementation
-| Handler | Status |
-|---------|--------|
-| os.create_note | Real |
-| os.search_notes | Real |
-| os.create_task | Real |
-| os.complete_task | Real |
-| os.list_tasks | Real |
-| os.health_check | Real |
-| leads.create | Real (keyed) |
-| leads.update_stage | Real |
-| leads.list_by_stage | Real |
-| quote.create_from_inspection | Real |
-| quote.calculate_totals | Real |
-| entity.create | Real |
-| entity.update | Real |
-| entity.search | Real |
-| entity.get | Real |
-| job.create_from_accepted_quote | Real |
-| job.assign_dates | Real |
-| job.complete | Real |
-| comms.log_call_outcome | Real |
-| comms.create_followup_task_from_message | Real |
-| invoice.create_from_job | Real |
-| invoice.add_payment | Real |
-| invoice.mark_overdue | Real |
-| inspection.create | Real |
-| inspection.lock | Real |
+### Exist and Stable
+- `core_tool_calls` - Tool queue
+- `core_tool_receipts` - Execution results
+- `brain_runs` - Brain audit log
+- `notes`, `tasks`, `leads`, `quotes`, `quote_line_items`
 
-### Not Configured (Stub Implementation)
-All remaining tools in registry return structured `not_configured` responses.
+### Migrations Pending
 
-#### Worker Status
+- `entities` (gem-core/migrations/001)
+- `jobs` (gem-core/migrations/002)
+- `invoices` (gem-core/migrations/003)
+- `comms_log` (gem-core/migrations/004)
+- `inspections` (gem-core/migrations/005)
 
-- `worker_loop`: Running on Render
-- `atomic_claim_rpc`: `claim_next_core_tool_call` (Stabilized with explicit aliases and qualified columns)
-- `poll_interval`: 5000ms defaultault
+## Services Status
+
+### GEM-CORE Executor
+- Worker loop: polls every 5000ms
+- Atomic claim via `claim_next_core_tool_call` RPC (queue → claim RPC → handler → receipt)
+- All handlers export from `src/handlers/<domain>.js`
+
+### GEM Brain
+- HTTP: `POST /brain/run`
+- CLI: `node scripts/brain.js`
+- Modes: answer, plan, enqueue, enqueue_and_wait
+- Rules-first planner (planner → enqueue calls → optional receipt wait → brain_runs logging)
 
 ## Known Gaps
 
-1. Tables `entities`, `jobs`, `invoices`, `comms_log` need migration execution
-2. Integration tools require external provider configuration
-3. PDF generation tools not configured
-4. AI composition tools not configured
+1. Domain table migrations not yet executed
+2. Provider integrations not configured (Twilio, SendGrid, etc.)
+3. LLM planner not implemented (rules-first only)
+4. PDF generation returns not_configured
 
 ---
 
-*This document updates frequently as implementation progresses.*
+*Last updated: 2026-01-05*

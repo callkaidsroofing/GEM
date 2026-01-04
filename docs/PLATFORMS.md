@@ -1,63 +1,67 @@
-# Platform Documentation
+# Platforms
 
-## Render (CKR-CORE Worker)
+Deployment and infrastructure.
 
-### Environment
+## Render
+
+### GEM-CORE Executor
 - **Type**: Background Worker
-- **Runtime**: Node.js 20.x
-- **Module System**: ESM (`"type": "module"` in package.json)
+- **Root Directory**: `gem-core`
+- **Start Command**: `node index.js`
+- **Runtime**: Node.js 20+
 
-### Configuration
-Environment variables (set in Render dashboard):
-- `SUPABASE_URL` - Supabase project URL
-- `SUPABASE_SERVICE_ROLE_KEY` - Service role key for admin access
-- `TOOLS_POLL_INTERVAL_MS` - Poll interval (default: 5000)
+### GEM Brain
+- **Type**: Web Service
+- **Root Directory**: `gem-brain`
+- **Start Command**: `npm start`
+- **Runtime**: Node.js 20+
+- **Port**: Set by Render via `PORT` env var
 
-### Deployment
-- Auto-deploys from main branch
-- Health monitored via process status
-- Graceful shutdown on SIGTERM/SIGINT
+### Environment Variables
 
-### Logs
-- Access via Render dashboard
-- Worker ID prefix: `[worker-xxxxxxxx]`
-- Tool execution logged with call ID and tool name
+Both services need:
+```
+SUPABASE_URL=https://xxx.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=eyJ...
+```
 
-## Supabase (Database + RPC)
+Executor optional:
+```
+TOOLS_POLL_INTERVAL_MS=5000
+```
 
-### Tables
+Brain optional:
+```
+PORT=3000
+LOG_LEVEL=info
+```
 
-**Core System:**
-- `core_tool_calls` - Tool invocation queue
-- `core_tool_receipts` - Execution receipts
+## Supabase
 
-**Domain Tables:**
-- `notes`, `tasks`, `leads`, `quotes`, `quote_line_items`
-- `entities`, `jobs`, `invoices`, `comms_log` (pending migration)
+### Core Tables
+
+| Table | Purpose |
+|-------|---------|
+| `core_tool_calls` | Tool invocation queue |
+| `core_tool_receipts` | Execution results |
+| `brain_runs` | Brain request audit log |
 
 ### RPC Functions
-- `claim_next_core_tool_call(p_worker_id)` - Atomic job claim (Updates `claimed_by`, `claimed_at`)
 
-### Access
-- Worker uses service role key
-- Full database access for tool execution
-- Row-level security bypassed via service role
+- `claim_next_core_tool_call(p_worker_id)` - Atomic job claim
 
-## Frontend Bridge (Termux)
+### Migrations
 
-> **IMPORTANT: This is a separate system. Do not modify.**
+Core system: `gem-core/sql/`
+Domain tables: `gem-core/migrations/`
+Brain tables: `gem-brain/sql/`
 
-The `frontend_bridge.py` runs locally on Termux and handles:
-- Local voice/chat interface
-- Enqueueing tool calls to Supabase
-- Reading receipts from Supabase
+## Termux (Separate System)
 
-### Boundary
-- CKR-CORE worker **only** processes queued calls
-- CKR-CORE worker **never** initiates calls
-- All local/mobile logic is in `frontend_bridge.py`
-- GEM repository does not contain Termux code
+`frontend_bridge.py` runs on local device, not in this repo.
 
----
+- Enqueues calls to Supabase
+- Reads receipts from Supabase
+- No direct connection to GEM services
 
-*This document grounds execution environments.*
+DO NOT modify Termux code from this repo.

@@ -1,6 +1,8 @@
 # Registry System
 
-The registry (`tools.registry.json`) is the single source of truth for all tool definitions in CKR-CORE.
+> For system overview, see `/docs/SYSTEM.md`. For constraints, see `/docs/CONSTRAINTS.md`.
+
+The registry (`tools.registry.json`) is the single source of truth for all tool definitions.
 
 > **For current implementation status of each tool, see `registry_coverage.md`.**
 > That file is generated and shows which tools are real vs not_configured.

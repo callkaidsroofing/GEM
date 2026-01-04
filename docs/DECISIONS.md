@@ -1,88 +1,53 @@
 # Architectural Decisions
 
-This document captures irreversible or high-impact decisions that should not be re-litigated.
+Locked decisions. Do not re-litigate without strong justification.
 
-## D001: GEM is Cloud-First
+## D001: Cloud-First
 
-**Date**: 2024
-**Status**: Locked
-
-GEM runs as a cloud-hosted background worker on Render. Local execution is not supported. The worker polls Supabase for queued tool calls and writes receipts back.
-
-**Rationale**: Cloud hosting provides reliability, logging, and separation from local devices.
+GEM runs on Render. No local execution mode.
 
 ## D002: Registry is Authoritative
 
-**Date**: 2024
-**Status**: Locked
+`tools.registry.json` defines all tools. Names, schemas, idempotency are contracts.
 
-`tools.registry.json` is the single source of truth for tool definitions. Tool names, schemas, and idempotency rules are defined there and must not be modified without explicit versioning.
+## D003: Supabase Only
 
-**Rationale**: Contract-first design enables reliable tool execution and agent orchestration.
+Single database. No secondary storage, no local state.
 
-## D003: Supabase is the Only Database
+## D004: Queue-Based Communication
 
-**Date**: 2024
-**Status**: Locked
+Brain and Executor communicate via `core_tool_calls` and `core_tool_receipts` tables only. No direct calls.
 
-All data is stored in Supabase PostgreSQL. No secondary databases, no local storage, no file-based state.
+## D005: One Receipt Per Call
 
-**Rationale**: Single source of truth simplifies architecture and enables atomic operations.
+Every call produces exactly one receipt. No batching, no deferred writes.
 
-## D004: Frontend and Backend are Separate Systems
+## D006: Three States Only
 
-**Date**: 2024
-**Status**: Locked
+Tool outcomes: `succeeded`, `failed`, `not_configured`. No other states.
 
-The local Termux frontend (`frontend_bridge.py`) and the cloud backend (GEM/CKR-CORE) communicate only via Supabase tables. They share no code and have no direct connection.
+## D007: Keyed Idempotency via Registry
 
-**Rationale**: Clean separation allows independent evolution and deployment.
-
-## D005: Exactly One Receipt Per Call
-
-**Date**: 2024
-**Status**: Locked
-
-Every tool call in `core_tool_calls` produces exactly one corresponding receipt in `core_tool_receipts`. No exceptions, no batching, no deferred writes.
-
-**Rationale**: Complete audit trail, deterministic execution, reliable retry semantics.
-
-## D006: Three Outcome States Only
-
-**Date**: 2024
-**Status**: Locked
-
-Every tool execution results in exactly one of:
-- `succeeded` - Real execution with effects
-- `failed` - Error with details
-- `not_configured` - Tool exists but requires setup
-
-**Rationale**: Unambiguous status enables reliable agent decision-making.
-
-## D007: Keyed Idempotency Uses Registry Definition
-
-**Date**: 2024
-**Status**: Locked
-
-For tools with `idempotency.mode: keyed`, the `key_field` is defined in the registry. The executor computes the key from `tool.name + key_field + input[key_field]` and checks for existing successful receipts.
-
-**Rationale**: Prevents duplicate domain rows while allowing flexible key definitions.
+`idempotency.mode: keyed` uses `key_field` from registry. Executor checks for duplicates.
 
 ## D008: Handler Dispatch Pattern
 
-**Date**: 2024
-**Status**: Locked
-
 ```
-tool_name = "domain.method"
-→ handler file: src/handlers/<domain>.js
-→ exported function: <method>
+domain.method → src/handlers/<domain>.js → export <method>
 ```
 
-For multi-part names, parts after domain are joined with underscore.
+## D009: Brain Validates, Executor Executes
 
-**Rationale**: Simple, predictable mapping from tool names to handler functions.
+Brain validates input against registry before enqueueing. Executor trusts Brain did its job but re-validates.
+
+## D010: Rules-First Brain
+
+Brain works without LLM. Pattern matching handles common cases. LLM is optional enhancement.
+
+## D011: Documentation at Root
+
+`/docs/` is canonical. Subsystem docs are local mechanics only.
 
 ---
 
-*This document captures decisions that should not be revisited without strong justification.*
+*Decisions are permanent unless explicitly revisited.*

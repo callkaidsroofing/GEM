@@ -5,16 +5,16 @@ Generated from `tools.registry.json` v1.0.0
 > **This file is generated from `tools.registry.json` and handler exports.**
 > **Do not edit by hand.**
 >
-> Regenerate this file whenever `tools.registry.json` or handlers change.
+> Regenerate with: `node scripts/analyze-coverage.js`
 > Review handler files in `src/handlers/` to determine real vs not_configured status.
 
 ## Coverage Summary
 
 | Status | Count |
 |--------|-------|
-| Real Implementation | 26 |
-| Not Configured | 61 |
-| **Total** | **87** |
+| Real Implementation | 40 |
+| Not Configured | 59 |
+| **Total** | **99** |
 
 **Coverage: 100%** - All tools have executable handlers.
 
@@ -77,7 +77,6 @@ Generated from `tools.registry.json` v1.0.0
 | leads.mark_lost | real | safe-retry | leads |
 
 ### inspection (7 tools)
-
 | Tool | Status | Idempotency | Tables Touched |
 |------|--------|-------------|----------------|
 | inspection.create | real | none | inspections |
@@ -100,7 +99,7 @@ Generated from `tools.registry.json` v1.0.0
 | quote.mark_accepted | real | safe-retry | quotes |
 | quote.mark_declined | real | safe-retry | quotes |
 
-### job (10 tools)
+### job (9 tools)
 
 | Tool | Status | Idempotency | Tables Touched |
 |------|--------|-------------|----------------|
@@ -114,7 +113,7 @@ Generated from `tools.registry.json` v1.0.0
 | job.generate_warranty_certificate | not_configured | safe-retry | - |
 | job.request_review | not_configured | safe-retry | - |
 
-### invoice (7 tools)
+### invoice (6 tools)
 
 | Tool | Status | Idempotency | Tables Touched |
 |------|--------|-------------|----------------|
@@ -153,7 +152,7 @@ Generated from `tools.registry.json` v1.0.0
 | calendar.cancel_event | not_configured | safe-retry | - |
 | calendar.attach_job_to_event | not_configured | safe-retry | - |
 
-### media (7 tools)
+### media (6 tools)
 
 | Tool | Status | Idempotency | Tables Touched |
 |------|--------|-------------|----------------|
@@ -165,7 +164,6 @@ Generated from `tools.registry.json` v1.0.0
 | media.export_website_pack | not_configured | safe-retry | - |
 
 ### marketing (6 tools)
-
 | Tool | Status | Idempotency | Tables Touched |
 |------|--------|-------------|----------------|
 | marketing.generate_meta_ad_pack | not_configured | safe-retry | - |
@@ -254,6 +252,7 @@ Generated from `tools.registry.json` v1.0.0
 
 ## Keyed Idempotency Tools
 
+
 | Tool | Key Field |
 |------|-----------|
 | leads.create | phone |
@@ -265,3 +264,4 @@ Generated from `tools.registry.json` v1.0.0
 ---
 
 *This report is generated from the registry and reflects current implementation status.*
+*Last updated: 2026-01-05*

@@ -5,10 +5,12 @@
   "type": "module",
   "description": "Background executor for CKR tool registry and Supabase-backed task processing",
   "engines": {
-    "node": "20.x"
+    "node": ">=20"
   },
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "verify": "node --check index.js && for f in src/handlers/*.js src/lib/*.js; do node --check \"$f\"; done && echo 'All syntax checks passed'",
+    "coverage": "node scripts/analyze-coverage.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4"
