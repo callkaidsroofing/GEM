@@ -2,7 +2,28 @@
 
 GEM is a registry-driven tool execution system for Call Kaids Roofing. It provides reliable, auditable execution of business operations via a deterministic contract-based architecture.
 
-## Architecture
+## Repository Structure
+
+```
+/
+├── gem-core/           # CKR-CORE Tool Executor (Render Background Worker)
+│   ├── index.js        # Worker entry point
+│   ├── package.json    # Dependencies
+│   ├── tools.registry.json  # Tool definitions
+│   ├── src/            # Handler implementations
+│   ├── docs/           # System documentation
+│   ├── sql/            # Core table migrations
+│   ├── migrations/     # Domain table migrations
+│   ├── scripts/        # Utility scripts
+│   └── tests/          # Verification SQL
+└── README.md           # This file
+```
+
+## GEM-CORE Executor
+
+The executor is a background worker that processes tool calls from a Supabase queue.
+
+### Architecture
 
 ```
 ┌─────────────────────┐
@@ -12,7 +33,7 @@ GEM is a registry-driven tool execution system for Call Kaids Roofing. It provid
            ▼
 ┌─────────────────────┐
 │  CKR-CORE Worker    │  ← Claims, validates, executes, writes receipts
-│  (index.js)         │
+│  (gem-core/)        │
 └──────────┬──────────┘
            │
            ▼
@@ -21,39 +42,38 @@ GEM is a registry-driven tool execution system for Call Kaids Roofing. It provid
 └─────────────────────┘
 ```
 
-## Quick Start
+### Quick Start
 
-### Prerequisites
-- Node.js 20.x
-- Supabase project with required tables
+```bash
+cd gem-core
+npm install
+npm start
+```
 
 ### Environment Variables
+
 ```bash
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 TOOLS_POLL_INTERVAL_MS=5000  # optional, default 5000
 ```
 
-### Run Locally
-```bash
-npm install
-npm start
-```
-
 ### Enqueue a Tool Call
+
 ```sql
 INSERT INTO core_tool_calls (tool_name, input, status)
 VALUES ('os.create_task', '{"title": "Test task", "domain": "business"}', 'queued');
 ```
 
 ### Check Receipt
+
 ```sql
 SELECT * FROM core_tool_receipts ORDER BY created_at DESC LIMIT 1;
 ```
 
 ## Documentation
 
-All system documentation lives in `/docs`. Read in this order:
+All system documentation lives in `gem-core/docs/`. Read in this order:
 
 1. **`SYSTEM.md`** - What GEM/CKR-CORE is (and isn't)
 2. **`INTENT.md`** - Current development phase and focus
@@ -67,9 +87,14 @@ Reference docs:
 - `DECISIONS.md` - Architectural decisions (locked)
 - `registry_coverage.md` - Generated tool coverage report
 
-## Deployment
+## Deployment (Render)
 
-Deployed as a background worker on Render. See `PLATFORMS.md` for details.
+After restructure, configure Render with:
+- **Root Directory**: `gem-core`
+- **Start Command**: `node index.js`
+- **Build Command**: `npm install`
+
+See `gem-core/docs/PLATFORMS.md` for full details.
 
 ## License
 
