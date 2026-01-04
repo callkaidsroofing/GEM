@@ -12,7 +12,19 @@ Only three terminal states: `succeeded`, `failed`, `not_configured`.
 
 See `registry_coverage.md` for authoritative tool-by-tool status.
 
-**Current: Phase 2** (Documentation Lock-in + Controlled Expansion)
+**Phase 2A: COMPLETE** (Brain MVP)
+
+GEM-Brain implemented with:
+- Rules-first planner (no LLM required)
+- HTTP API (`POST /brain/run`)
+- CLI wrapper (`node scripts/brain.js`)
+- brain_runs persistence table
+- Registry guardrails (validation before enqueue)
+- Receipt waiting (enqueue_and_wait mode)
+
+Location: `gem-brain/`
+
+**Current: Phase 2B** (Controlled Expansion)
 - Documentation accuracy verified and locked
 - Coverage generator script added (`scripts/analyze-coverage.js`)
 - Ready for controlled tool expansion (one tool at a time)
@@ -22,11 +34,21 @@ See `registry_coverage.md` for authoritative tool-by-tool status.
 - Configure email provider (SendGrid)
 - Execute pending table migrations
 
+## Repository Structure
+
+```
+/
+├── gem-core/           # CKR-CORE Executor (Render Background Worker)
+├── gem-brain/          # AI Brain Layer (Render Web Service)
+└── README.md
+```
+
 ## Tables (Verified to Exist)
 
 ### Core System Tables
 - `core_tool_calls` - Tool invocation queue (Stabilized with `claimed_by`, `claimed_at`)
 - `core_tool_receipts` - Execution receipts (Stabilized)
+- `brain_runs` - Brain request/response audit log (NEW in Phase 2A)
 
 ### Domain Tables
 - `notes` - OS notes
@@ -77,9 +99,15 @@ See `registry_coverage.md` for the complete list with required providers.
 
 ## Worker Status
 
-- `worker_loop`: Running on Render
-- `atomic_claim_rpc`: `claim_next_core_tool_call` (Stabilized with explicit aliases and qualified columns)
+### GEM-CORE Executor
+- `worker_loop`: Running on Render (background worker)
+- `atomic_claim_rpc`: `claim_next_core_tool_call` (Stabilized)
 - `poll_interval`: 5000ms default
+
+### GEM-Brain
+- HTTP API available at `/brain/run`
+- CLI available at `scripts/brain.js`
+- Modes: answer, plan, enqueue, enqueue_and_wait
 
 ## Known Gaps
 
@@ -87,8 +115,9 @@ See `registry_coverage.md` for the complete list with required providers.
 2. Integration tools require external provider configuration
 3. PDF generation tools not configured
 4. AI composition tools not configured
+5. LLM integration for Brain not implemented (rules-first only)
 
 ---
 
 *This document updates frequently as implementation progresses.*
-*Last updated: 2026-01-03*
+*Last updated: 2026-01-04*

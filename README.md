@@ -9,40 +9,60 @@ GEM is a registry-driven tool execution system for Call Kaids Roofing. It provid
 ├── gem-core/           # CKR-CORE Tool Executor (Render Background Worker)
 │   ├── index.js        # Worker entry point
 │   ├── package.json    # Dependencies
-│   ├── tools.registry.json  # Tool definitions
+│   ├── tools.registry.json  # Tool definitions (99 tools)
 │   ├── src/            # Handler implementations
 │   ├── docs/           # System documentation
 │   ├── sql/            # Core table migrations
 │   ├── migrations/     # Domain table migrations
 │   ├── scripts/        # Utility scripts
 │   └── tests/          # Verification SQL
+│
+├── gem-brain/          # AI Brain Layer (Render Web Service)
+│   ├── src/            # Brain implementation
+│   │   ├── server.js   # HTTP API (Fastify)
+│   │   ├── brain.js    # Core runner
+│   │   └── planner/    # Rules-first planner
+│   ├── scripts/        # CLI wrapper
+│   ├── docs/           # Brain documentation
+│   ├── sql/            # brain_runs migration
+│   └── tests/          # Verification SQL
+│
 └── README.md           # This file
 ```
 
-## GEM-CORE Executor
-
-The executor is a background worker that processes tool calls from a Supabase queue.
-
-### Architecture
+## Architecture
 
 ```
 ┌─────────────────────┐
-│  core_tool_calls    │  ← Enqueued tool invocations
+│  User Message       │
 └──────────┬──────────┘
            │
            ▼
 ┌─────────────────────┐
-│  CKR-CORE Worker    │  ← Claims, validates, executes, writes receipts
+│  GEM Brain          │  ← Plans, validates, enqueues
+│  (gem-brain/)       │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  core_tool_calls    │  ← Queue (Supabase)
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  GEM-CORE Executor  │  ← Executes, writes receipts
 │  (gem-core/)        │
 └──────────┬──────────┘
            │
            ▼
 ┌─────────────────────┐
-│  core_tool_receipts │  ← Execution results and effects
+│  core_tool_receipts │  ← Results (Supabase)
 └─────────────────────┘
 ```
 
-### Quick Start
+## Quick Start
+
+### GEM-CORE Executor
 
 ```bash
 cd gem-core
@@ -50,48 +70,77 @@ npm install
 npm start
 ```
 
+### GEM Brain
+
+```bash
+cd gem-brain
+npm install
+npm start  # Starts HTTP API on port 3000
+```
+
 ### Environment Variables
 
 ```bash
+# Required for both
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-TOOLS_POLL_INTERVAL_MS=5000  # optional, default 5000
+
+# Optional
+TOOLS_POLL_INTERVAL_MS=5000  # Executor poll interval
+PORT=3000                    # Brain API port
 ```
 
-### Enqueue a Tool Call
+## Using the Brain
 
-```sql
-INSERT INTO core_tool_calls (tool_name, input, status)
-VALUES ('os.create_task', '{"title": "Test task", "domain": "business"}', 'queued');
+### CLI
+
+```bash
+cd gem-brain
+
+# Answer mode (no execution)
+node scripts/brain.js -m "system status" -M answer
+
+# Enqueue and wait for results
+node scripts/brain.js -m "create task: test the brain" -M enqueue_and_wait
 ```
 
-### Check Receipt
+### HTTP API
 
-```sql
-SELECT * FROM core_tool_receipts ORDER BY created_at DESC LIMIT 1;
+```bash
+# Health check
+curl http://localhost:3000/health
+
+# Run Brain
+curl -X POST http://localhost:3000/brain/run \
+  -H "Content-Type: application/json" \
+  -d '{"message": "system status", "mode": "enqueue_and_wait"}'
 ```
 
 ## Documentation
 
-All system documentation lives in `gem-core/docs/`. Read in this order:
+### Core Documentation (`gem-core/docs/`)
 
-1. **`SYSTEM.md`** - What GEM/CKR-CORE is (and isn't)
-2. **`INTENT.md`** - Current development phase and focus
+1. **`SYSTEM.md`** - What GEM is (executor + brain)
+2. **`INTENT.md`** - Current development phase
 3. **`CONSTRAINTS.md`** - Non-negotiable rules
-4. **`STATE.md`** - What exists today, what's next
+4. **`STATE.md`** - Current implementation status
+5. **`AGENTS.md`** - Guidelines for AI coding agents
 
-Reference docs:
-- `REGISTRY.md` - How tools and idempotency work
-- `AGENTS.md` - Guidelines for AI coding agents
-- `PLATFORMS.md` - Render and Supabase deployment
-- `DECISIONS.md` - Architectural decisions (locked)
-- `registry_coverage.md` - Generated tool coverage report
+### Brain Documentation (`gem-brain/docs/`)
+
+1. **`BRAIN.md`** - Brain contract, modes, failure modes
+2. **`RUNBOOK.md`** - How to run and deploy Brain
 
 ## Deployment (Render)
 
-After restructure, configure Render with:
+### GEM-CORE Executor (Background Worker)
 - **Root Directory**: `gem-core`
 - **Start Command**: `node index.js`
+- **Build Command**: `npm install`
+
+### GEM Brain (Web Service)
+- **Root Directory**: `gem-brain`
+- **Start Command**: `npm start`
 - **Build Command**: `npm install`
 
 See `gem-core/docs/PLATFORMS.md` for full details.
