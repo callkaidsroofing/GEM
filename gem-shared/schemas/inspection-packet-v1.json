@@ -1,0 +1,173 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "inspection_packet_v1",
+  "title": "Inspection Packet V1",
+  "description": "Normalized multimodal inspection data schema for GEM pipeline processing",
+  "type": "object",
+  "required": ["schema_version", "lead_id"],
+  "properties": {
+    "schema_version": {
+      "const": "inspection_packet_v1",
+      "description": "Schema version identifier"
+    },
+    "lead_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUID of the associated lead"
+    },
+    "site_address": {
+      "type": "string",
+      "description": "Street address of inspection site"
+    },
+    "site_suburb": {
+      "type": "string",
+      "description": "Suburb/locality of inspection site"
+    },
+    "scheduled_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Scheduled inspection date/time"
+    },
+    "photos": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["url"],
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL or storage reference to photo"
+          },
+          "caption": {
+            "type": "string",
+            "description": "Photo caption/description"
+          },
+          "location": {
+            "type": "string",
+            "description": "Location on property where photo was taken"
+          },
+          "tags": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Classification tags"
+          },
+          "taken_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When photo was taken"
+          }
+        }
+      },
+      "description": "Photos attached to inspection"
+    },
+    "measurements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "value", "unit"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Measurement type (area, length, count, pitch)"
+          },
+          "value": {
+            "type": "number",
+            "description": "Numeric measurement value"
+          },
+          "unit": {
+            "type": "string",
+            "description": "Unit of measurement"
+          },
+          "location": {
+            "type": "string",
+            "description": "Where measurement was taken"
+          },
+          "notes": {
+            "type": "string",
+            "description": "Additional notes"
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "description": "Measurements taken during inspection"
+    },
+    "defects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "severity"],
+        "properties": {
+          "type": {
+            "enum": ["tile", "ridge", "valley", "flashing", "gutter", "leak", "other"],
+            "description": "Category of defect"
+          },
+          "severity": {
+            "enum": ["low", "medium", "high"],
+            "description": "Severity level"
+          },
+          "location": {
+            "type": "string",
+            "description": "Location on property"
+          },
+          "description": {
+            "type": "string",
+            "description": "Detailed description"
+          },
+          "photo_refs": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "References to associated photos"
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "description": "Defects identified during inspection"
+    },
+    "checklist": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["item_name", "checked"],
+        "properties": {
+          "item_name": {
+            "type": "string",
+            "description": "Checklist item name"
+          },
+          "checked": {
+            "type": "boolean",
+            "description": "Whether item passed/is checked"
+          },
+          "notes": {
+            "type": "string",
+            "description": "Additional notes"
+          },
+          "checked_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "description": "Inspection checklist items"
+    },
+    "notes": {
+      "type": "string",
+      "description": "General inspection notes"
+    },
+    "inspector": {
+      "type": "string",
+      "description": "Name or ID of inspector"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When inspection was completed"
+    }
+  }
+}

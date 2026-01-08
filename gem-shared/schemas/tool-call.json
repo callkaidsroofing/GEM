@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "gem-tool-call",
+  "title": "GEM Tool Call",
+  "description": "Schema for a tool call that can be enqueued to core_tool_calls",
+  "type": "object",
+  "required": ["tool_name", "input"],
+  "properties": {
+    "tool_name": {
+      "type": "string",
+      "pattern": "^[a-z_]+(\\.[a-z_]+)+$",
+      "description": "Full tool name in domain.method format",
+      "examples": ["leads.create", "inspection.add_photo_ref", "quote.calculate_totals"]
+    },
+    "input": {
+      "type": "object",
+      "description": "Tool-specific input payload matching the tool's input_schema"
+    },
+    "idempotency_key": {
+      "type": ["string", "null"],
+      "description": "Optional idempotency key for duplicate prevention"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Optional metadata for the tool call",
+      "properties": {
+        "source": {
+          "type": "string",
+          "description": "Where this call originated (brain, webhook, skill, etc)"
+        },
+        "correlation_id": {
+          "type": "string",
+          "description": "ID to correlate related calls"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["low", "normal", "high"],
+          "description": "Execution priority"
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}
