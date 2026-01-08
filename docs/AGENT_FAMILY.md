@@ -479,6 +479,124 @@ The agent family is working when:
 - Architectural decisions: `/docs/DECISIONS.md`
 - Repository guide: `/CLAUDE.md`
 
+## Skills: Agent Power Tools
+
+The agent family is **amplified** (not replaced) by **Claude Skills** - deterministic, narrow, refusal-happy tools that agents invoke to execute known-safe workflows.
+
+### Skills Philosophy
+
+**Skills execute, agents decide.**
+
+- Skills are deterministic, schema-bound, and opinionated
+- Skills refuse if inputs are incomplete or ambiguous
+- Skills never guess, never "do their best", never make judgments
+- Skills strengthen agent biases without flattening them
+
+### Available Skills
+
+All Skills are documented in `.claude/skills/`:
+
+#### Wave 1: Foundation
+
+1. **handler-skeleton-generate** - Generate handler function skeletons
+   - **Used by**: gem-pragmatic-shipper, gem-contract-enforcer
+   - **Impact**: 90% reduction in boilerplate
+   - **Strengthens**: Pragmatic ships 10x faster, Contract enforces patterns
+
+2. **contract-drift-detect** - Compare handlers against registry contracts
+   - **Used by**: gem-paranoid-validator, gem-contract-enforcer
+   - **Impact**: Automated contract violation detection
+   - **Strengthens**: Paranoid finds violations, Contract enforces automatically
+
+3. **receipt-validate** - Verify receipts match doctrine exactly
+   - **Used by**: gem-paranoid-validator, gem-contract-enforcer
+   - **Impact**: Enforces "one receipt per call" rule
+   - **Strengthens**: Paranoid validates claims, Contract prevents doctrine drift
+
+#### Wave 2: Acceleration
+
+4. **test-case-generate** - Generate SQL test inserts and verification queries
+   - **Used by**: gem-pragmatic-shipper, gem-paranoid-validator
+   - **Impact**: 90% reduction in test authoring time
+   - **Strengthens**: Pragmatic ships tests faster, Paranoid tests more scenarios
+
+5. **error-message-audit** - Audit error messages for clarity and actionability
+   - **Used by**: gem-user-advocate, gem-paranoid-validator
+   - **Impact**: Systematic UX improvement
+   - **Strengthens**: User Advocate audits all handlers, Paranoid finds ambiguous errors
+
+### Skills Invocation Matrix
+
+| Skill | Paranoid | Pragmatic | Architect | User | Performance | Contract |
+|-------|----------|-----------|-----------|------|-------------|----------|
+| handler-skeleton-generate | ❌ | ✅ | ✅ | ❌ | ❌ | ✅ |
+| contract-drift-detect | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| receipt-validate | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| test-case-generate | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| error-message-audit | ✅ | ❌ | ❌ | ✅ | ❌ | ❌ |
+
+### Skills + Agents Workflow
+
+Example: Implementing a new tool with Skills
+
+```
+1. gem-architect-visionary
+   → Designs approach
+   → Defines tool contract
+
+2. gem-pragmatic-shipper
+   → Invokes handler-skeleton-generate Skill
+   → Gets handler template in 30 seconds
+   → Implements business logic
+   → Invokes test-case-generate Skill
+   → Gets test SQL instantly
+
+3. gem-contract-enforcer
+   → Invokes contract-drift-detect Skill
+   → Verifies no violations
+
+4. gem-paranoid-validator
+   → Invokes receipt-validate Skill
+   → Verifies receipts match doctrine
+   → Runs generated tests
+
+5. gem-user-advocate
+   → Invokes error-message-audit Skill
+   → Improves error messages
+```
+
+**Result**: 80% time savings, 100% contract compliance, comprehensive testing
+
+### Skills Governance
+
+**New Skill Creation Criteria** (ALL must be true):
+1. Deterministic (100% predictable)
+2. Narrow (single responsibility)
+3. Non-judgmental (requires zero interpretation)
+4. Schema-bound (strict input/output schemas)
+5. Refusal-happy (clear refusal conditions)
+6. Bias-preserving (strengthens agents without flattening)
+7. Quality-bar (passes all 5 agent checks)
+
+**Skills Retirement**: A Skill MUST be retired if:
+- Superseded by native tooling
+- Drift from GEM patterns
+- Unused for 30 days
+- Refusal rate > 50%
+- Violates GEM hard laws
+
+### Skills vs Agents
+
+| Aspect | Agents | Skills |
+|--------|--------|--------|
+| Purpose | Decide what to do | Execute known workflows |
+| Judgment | Make judgments | Never guess |
+| Bias | Intentional bias | No bias, deterministic |
+| Output | Analysis, recommendations | Structured artifacts |
+| Failure Mode | Disagree productively | Refuse clearly |
+
+**Key Principle**: Skills make agents more effective without making them less distinctive.
+
 ## Contributing to the Family
 
 New agents should:
@@ -494,6 +612,12 @@ Proposed agents are reviewed for:
 - **Complementary**: Creates productive tension with existing agents
 - **Grounded**: References real code, not abstract concepts
 
+New Skills should:
+1. Meet all 7 creation criteria (see Skills Governance)
+2. Strengthen at least one agent bias
+3. Not flatten any agent bias
+4. Pass the 5-agent quality bar
+
 ---
 
-*The agent family represents a room full of extraordinary savants who complement each other through different perspectives, creating emergent quality without drift or hallucination.*
+*The agent family represents a room full of extraordinary savants who complement each other through different perspectives, amplified by deterministic Skills that eliminate toil without eliminating judgment, creating emergent quality without drift or hallucination.*
