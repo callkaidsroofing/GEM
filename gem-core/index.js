@@ -4,8 +4,63 @@ import { validateInput, validateOutput } from './src/lib/validate.js';
 import { checkIdempotency } from './src/lib/idempotency.js';
 import crypto from 'crypto';
 
-const POLL_INTERVAL = parseInt(process.env.TOOLS_POLL_INTERVAL_MS || '5000', 10);
+// ============================================
+// CONFIGURATION
+// ============================================
+
+/**
+ * Parse TOOLS_POLL_INTERVAL_MS safely with default fallback
+ * If missing, invalid, or out of range, default to 5000ms
+ */
+function parsePollInterval() {
+  const raw = process.env.TOOLS_POLL_INTERVAL_MS;
+  if (!raw) {
+    return 5000;
+  }
+  const parsed = parseInt(raw, 10);
+  if (isNaN(parsed) || parsed < 1000 || parsed > 60000) {
+    console.warn(`[CONFIG] Invalid TOOLS_POLL_INTERVAL_MS="${raw}", using default 5000ms`);
+    return 5000;
+  }
+  return parsed;
+}
+
+const POLL_INTERVAL = parsePollInterval();
 const WORKER_ID = `worker-${crypto.randomUUID().slice(0, 8)}`;
+
+// ============================================
+// STRUCTURED LOGGING
+// ============================================
+
+/**
+ * Structured log helper for consistent output format
+ */
+function log(level, message, context = {}) {
+  const entry = {
+    timestamp: new Date().toISOString(),
+    level,
+    worker_id: WORKER_ID,
+    message,
+    ...context
+  };
+  console.log(JSON.stringify(entry));
+}
+
+function logInfo(message, context = {}) {
+  log('INFO', message, context);
+}
+
+function logWarn(message, context = {}) {
+  log('WARN', message, context);
+}
+
+function logError(message, context = {}) {
+  log('ERROR', message, context);
+}
+
+// ============================================
+// POLL LOOP
+// ============================================
 
 async function poll() {
   try {
@@ -14,24 +69,38 @@ async function poll() {
       .rpc('claim_next_core_tool_call', { p_worker_id: WORKER_ID });
 
     if (claimError) {
-      console.error('Error claiming jobs:', claimError);
+      logError('Error claiming jobs', { error: claimError.message, code: claimError.code });
       return;
     }
 
     if (!jobs || jobs.length === 0) {
+      // No jobs available - this is normal, don't log
       return;
     }
 
     const job = jobs[0];
-    console.log(`[${WORKER_ID}] Processing job ${job.id}: ${job.tool_name}`);
+    logInfo('Job claimed', { 
+      call_id: job.id, 
+      tool_name: job.tool_name,
+      status: 'running'
+    });
 
     await executeJob(job);
   } catch (err) {
-    console.error('Unexpected error in poll loop:', err);
+    // CRITICAL: Never let the poll loop crash
+    logError('Unexpected error in poll loop', { 
+      error: err.message, 
+      stack: err.stack 
+    });
   }
 }
 
+// ============================================
+// JOB EXECUTION
+// ============================================
+
 async function executeJob(job) {
+  const startTime = Date.now();
   const tool = getTool(job.tool_name);
 
   // 1. Check if tool exists in registry
@@ -40,6 +109,7 @@ async function executeJob(job) {
       error_code: 'unknown_tool',
       message: `Tool ${job.tool_name} not found in registry`
     });
+    logWarn('Unknown tool', { call_id: job.id, tool_name: job.tool_name });
     return;
   }
 
@@ -47,8 +117,20 @@ async function executeJob(job) {
     // 2. Check Idempotency (includes keyed idempotency for key_field tools)
     const existingReceipt = await checkIdempotency(tool, job);
     if (existingReceipt) {
-      console.log(`Idempotency hit for job ${job.id}, returning existing receipt`);
-      await succeedJob(job, existingReceipt.result, existingReceipt.effects);
+      logInfo('Idempotency hit', { 
+        call_id: job.id, 
+        tool_name: job.tool_name,
+        mode: tool.idempotency?.mode || 'none'
+      });
+      await succeedJob(job, existingReceipt.result, {
+        ...existingReceipt.effects,
+        idempotency: {
+          mode: tool.idempotency?.mode || 'none',
+          hit: true,
+          key_field: tool.idempotency?.key_field,
+          key_value: existingReceipt.key_value
+        }
+      });
       return;
     }
 
@@ -59,6 +141,11 @@ async function executeJob(job) {
         error_code: 'validation_error',
         message: 'Input validation failed',
         details: inputValidation.error
+      });
+      logWarn('Input validation failed', { 
+        call_id: job.id, 
+        tool_name: job.tool_name,
+        errors: inputValidation.error
       });
       return;
     }
@@ -71,6 +158,11 @@ async function executeJob(job) {
           error_code: 'validation_error',
           message: `Missing required key field for keyed idempotency: ${keyField}`,
           details: { key_field: keyField }
+        });
+        logWarn('Missing keyed idempotency field', { 
+          call_id: job.id, 
+          tool_name: job.tool_name,
+          key_field: keyField
         });
         return;
       }
@@ -89,7 +181,12 @@ async function executeJob(job) {
       const module = await import(handlerPath);
       handler = module[method];
     } catch (err) {
-      console.warn(`Failed to load handler ${handlerPath}:`, err.message);
+      logWarn('Failed to load handler module', { 
+        call_id: job.id, 
+        tool_name: job.tool_name,
+        handler_path: handlerPath,
+        error: err.message
+      });
     }
 
     if (!handler) {
@@ -97,6 +194,12 @@ async function executeJob(job) {
       await failJob(job, {
         error_code: 'unknown_tool',
         message: `Handler export '${method}' not found in ${handlerPath}`
+      });
+      logWarn('Handler not found', { 
+        call_id: job.id, 
+        tool_name: job.tool_name,
+        method,
+        handler_path: handlerPath
       });
       return;
     }
@@ -115,20 +218,58 @@ async function executeJob(job) {
     if (resultObj.status === 'not_configured') {
       // Write receipt with not_configured status
       await writeNotConfiguredReceipt(job, resultObj);
+      const duration = Date.now() - startTime;
+      logInfo('Job completed (not_configured)', { 
+        call_id: job.id, 
+        tool_name: job.tool_name,
+        status: 'not_configured',
+        duration_ms: duration
+      });
       return;
     }
 
     // 8. Validate Output
     const outputValidation = validateOutput(tool, resultObj);
     if (!outputValidation.valid) {
-      console.warn(`Output validation failed for ${job.tool_name}:`, outputValidation.error);
+      logWarn('Output validation warning', { 
+        call_id: job.id, 
+        tool_name: job.tool_name,
+        errors: outputValidation.error
+      });
     }
 
-    // 9. Write Receipt and Update Status
-    await succeedJob(job, resultObj, result.effects || {});
+    // 9. Build idempotency effects
+    const idempotencyEffects = {
+      mode: tool.idempotency?.mode || 'none',
+      hit: false
+    };
+    if (tool.idempotency?.key_field) {
+      idempotencyEffects.key_field = tool.idempotency.key_field;
+      idempotencyEffects.key_value = job.input[tool.idempotency.key_field];
+    }
+
+    // 10. Write Receipt and Update Status
+    await succeedJob(job, resultObj, {
+      ...(result.effects || {}),
+      idempotency: idempotencyEffects
+    });
+
+    const duration = Date.now() - startTime;
+    logInfo('Job completed', { 
+      call_id: job.id, 
+      tool_name: job.tool_name,
+      status: 'succeeded',
+      duration_ms: duration
+    });
 
   } catch (err) {
-    console.error(`Error executing job ${job.id}:`, err);
+    const duration = Date.now() - startTime;
+    logError('Job execution failed', { 
+      call_id: job.id, 
+      tool_name: job.tool_name,
+      error: err.message,
+      duration_ms: duration
+    });
     await failJob(job, {
       error_code: err.code || 'execution_error',
       message: err.message,
@@ -136,6 +277,10 @@ async function executeJob(job) {
     });
   }
 }
+
+// ============================================
+// RECEIPT WRITERS
+// ============================================
 
 /**
  * Write a not_configured receipt - tool executed but is not yet configured
@@ -158,7 +303,10 @@ async function writeNotConfiguredReceipt(job, result) {
     });
 
   if (receiptError) {
-    console.error(`Error writing not_configured receipt for job ${job.id}:`, receiptError);
+    logError('Error writing not_configured receipt', { 
+      call_id: job.id, 
+      error: receiptError.message 
+    });
   }
 
   // Update call status to not_configured
@@ -168,7 +316,10 @@ async function writeNotConfiguredReceipt(job, result) {
     .eq('id', job.id);
 
   if (statusError) {
-    console.error(`Error updating not_configured status for job ${job.id}:`, statusError);
+    logError('Error updating not_configured status', { 
+      call_id: job.id, 
+      error: statusError.message 
+    });
   }
 }
 
@@ -185,7 +336,10 @@ async function succeedJob(job, result, effects) {
     });
 
   if (receiptError) {
-    console.error(`Error writing receipt for job ${job.id}:`, receiptError);
+    logError('Error writing success receipt', { 
+      call_id: job.id, 
+      error: receiptError.message 
+    });
   }
 
   // Update status
@@ -195,7 +349,10 @@ async function succeedJob(job, result, effects) {
     .eq('id', job.id);
 
   if (statusError) {
-    console.error(`Error updating status for job ${job.id}:`, statusError);
+    logError('Error updating success status', { 
+      call_id: job.id, 
+      error: statusError.message 
+    });
   }
 }
 
@@ -212,7 +369,10 @@ async function failJob(job, error) {
     });
 
   if (receiptError) {
-    console.error(`Error writing failure receipt for job ${job.id}:`, receiptError);
+    logError('Error writing failure receipt', { 
+      call_id: job.id, 
+      error: receiptError.message 
+    });
   }
 
   // Update status
@@ -226,22 +386,35 @@ async function failJob(job, error) {
     .eq('id', job.id);
 
   if (statusError) {
-    console.error(`Error updating failure status for job ${job.id}:`, statusError);
+    logError('Error updating failure status', { 
+      call_id: job.id, 
+      error: statusError.message 
+    });
   }
 }
 
-// Graceful shutdown
+// ============================================
+// GRACEFUL SHUTDOWN
+// ============================================
+
 process.on('SIGTERM', () => {
-  console.log(`[${WORKER_ID}] Received SIGTERM, shutting down gracefully...`);
+  logInfo('Received SIGTERM, shutting down gracefully...');
   process.exit(0);
 });
 
 process.on('SIGINT', () => {
-  console.log(`[${WORKER_ID}] Received SIGINT, shutting down gracefully...`);
+  logInfo('Received SIGINT, shutting down gracefully...');
   process.exit(0);
 });
 
-// Start the loop
-console.log(`CKR Tool Executor started. Worker ID: ${WORKER_ID}. Polling every ${POLL_INTERVAL}ms...`);
+// ============================================
+// STARTUP
+// ============================================
+
+logInfo('CKR Tool Executor starting', { 
+  poll_interval_ms: POLL_INTERVAL,
+  node_version: process.version
+});
+
 setInterval(poll, POLL_INTERVAL);
 poll(); // Initial run

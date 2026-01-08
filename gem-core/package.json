@@ -1,11 +1,11 @@
 {
   "name": "ckr-core-executor",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "Background executor for CKR tool registry and Supabase-backed task processing",
   "engines": {
-    "node": ">=20"
+    "node": "20.x"
   },
   "scripts": {
     "start": "node index.js",
@@ -13,6 +13,8 @@
     "coverage": "node scripts/analyze-coverage.js"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.45.4"
+    "@supabase/supabase-js": "^2.45.4",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1"
   }
 }

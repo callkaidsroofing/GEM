@@ -1,15 +1,28 @@
 import { supabase } from '../lib/supabase.js';
+import { success } from '../lib/responses.js';
 
 /**
  * leads.create - Create a new lead record with minimal required fields
  * Enforces keyed idempotency by phone number
  * Real DB-backed implementation
  *
- * Required fields: name, phone, suburb, service
+ * Required fields: name, phone
  * Uses `status` for lead lifecycle (not `stage`)
  */
 export async function create(input, context = {}) {
-  const { name, phone, email, suburb, source, notes } = input;
+  const { 
+    name, 
+    phone, 
+    email, 
+    address,
+    suburb, 
+    source, 
+    notes,
+    leadconnector_contact_id,
+    ghl_contact_id,
+    metadata
+  } = input;
+  
   // Default service to 'unknown' if not provided
   const service = input.service || 'unknown';
   // Default status to 'new' if not provided
@@ -24,27 +37,33 @@ export async function create(input, context = {}) {
 
   if (existing) {
     // Return existing lead_id for idempotency
-    return {
-      result: { lead_id: existing.id },
-      effects: {
-        db_writes: [],
-        idempotency_hit: true
-      }
-    };
+    return success(
+      { lead_id: existing.id, created: false },
+      { db_writes: [], idempotency: { hit: true, key_field: 'phone', key_value: phone } }
+    );
+  }
+
+  const insertData = {
+    name,
+    phone,
+    email: email || null,
+    address: address || null,
+    suburb: suburb || null,
+    service,
+    source: source || null,
+    notes: notes || null,
+    status,
+    metadata: metadata || {}
+  };
+
+  // Add LeadConnector ID if provided
+  if (leadconnector_contact_id || ghl_contact_id) {
+    insertData.leadconnector_contact_id = leadconnector_contact_id || ghl_contact_id;
   }
 
   const { data, error } = await supabase
     .from('leads')
-    .insert({
-      name,
-      phone,
-      email,
-      suburb,
-      service,
-      source,
-      notes,
-      status
-    })
+    .insert(insertData)
     .select('id')
     .single();
 
@@ -58,26 +77,174 @@ export async function create(input, context = {}) {
         .single();
 
       if (existingAfterRace) {
-        return {
-          result: { lead_id: existingAfterRace.id },
-          effects: {
-            db_writes: [],
-            idempotency_hit: true
-          }
-        };
+        return success(
+          { lead_id: existingAfterRace.id, created: false },
+          { db_writes: [], idempotency: { hit: true, key_field: 'phone', key_value: phone } }
+        );
       }
     }
     throw new Error(`Failed to create lead: ${error.message}`);
   }
 
-  return {
-    result: { lead_id: data.id },
-    effects: {
-      db_writes: [
-        { table: 'leads', action: 'insert', id: data.id }
-      ]
+  return success(
+    { lead_id: data.id, created: true },
+    { db_writes: [{ table: 'leads', action: 'insert', id: data.id }] }
+  );
+}
+
+/**
+ * leads.upsert - Create or update a lead, with LeadConnector priority
+ * If conflicts occur, LeadConnector values overwrite Supabase values
+ *
+ * Priority: LeadConnector > Supabase local data
+ */
+export async function upsert(input, context = {}) {
+  const { 
+    name, 
+    phone, 
+    email, 
+    address,
+    suburb, 
+    source, 
+    notes,
+    leadconnector_contact_id,
+    ghl_contact_id,
+    metadata,
+    status
+  } = input;
+
+  const lcId = leadconnector_contact_id || ghl_contact_id;
+
+  // First, try to find existing lead by LeadConnector ID or phone
+  let existingLead = null;
+  
+  if (lcId) {
+    const { data } = await supabase
+      .from('leads')
+      .select('*')
+      .eq('leadconnector_contact_id', lcId)
+      .maybeSingle();
+    existingLead = data;
+  }
+
+  if (!existingLead && phone) {
+    const { data } = await supabase
+      .from('leads')
+      .select('*')
+      .eq('phone', phone)
+      .maybeSingle();
+    existingLead = data;
+  }
+
+  if (existingLead) {
+    // UPDATE: LeadConnector values win on conflict
+    const updateData = {
+      updated_at: new Date().toISOString()
+    };
+
+    // LeadConnector provided values always overwrite
+    if (name) updateData.name = name;
+    if (phone) updateData.phone = phone;
+    if (email) updateData.email = email;
+    if (address) updateData.address = address;
+    if (suburb) updateData.suburb = suburb;
+    if (source) updateData.source = source;
+    if (status) updateData.status = status;
+    if (lcId) updateData.leadconnector_contact_id = lcId;
+    
+    // Merge metadata
+    if (metadata) {
+      updateData.metadata = {
+        ...existingLead.metadata,
+        ...metadata,
+        _last_sync: new Date().toISOString(),
+        _sync_source: 'leadconnector'
+      };
+    }
+
+    // Add sync note
+    if (notes) {
+      const existingNotes = existingLead.notes || '';
+      const syncNote = `[LC Sync ${new Date().toISOString()}] ${notes}`;
+      updateData.notes = existingNotes ? `${existingNotes}\n${syncNote}` : syncNote;
+    }
+
+    const { error } = await supabase
+      .from('leads')
+      .update(updateData)
+      .eq('id', existingLead.id);
+
+    if (error) {
+      throw new Error(`Failed to update lead: ${error.message}`);
+    }
+
+    return success(
+      { lead_id: existingLead.id, action: 'updated', leadconnector_priority: true },
+      { 
+        db_writes: [{ table: 'leads', action: 'update', id: existingLead.id }],
+        notes: ['LeadConnector values overwrote local data']
+      }
+    );
+  }
+
+  // CREATE: New lead
+  const insertData = {
+    name,
+    phone,
+    email: email || null,
+    address: address || null,
+    suburb: suburb || null,
+    source: source || 'leadconnector',
+    notes: notes || null,
+    status: status || 'new',
+    leadconnector_contact_id: lcId || null,
+    metadata: {
+      ...metadata,
+      _created_from: 'leadconnector',
+      _created_at: new Date().toISOString()
     }
   };
+
+  const { data, error } = await supabase
+    .from('leads')
+    .insert(insertData)
+    .select('id')
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to create lead: ${error.message}`);
+  }
+
+  return success(
+    { lead_id: data.id, action: 'created' },
+    { db_writes: [{ table: 'leads', action: 'insert', id: data.id }] }
+  );
+}
+
+/**
+ * leads.get - Retrieve a lead by ID
+ */
+export async function get(input) {
+  const { lead_id } = input;
+
+  const { data, error } = await supabase
+    .from('leads')
+    .select('*')
+    .eq('id', lead_id)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Failed to fetch lead: ${error.message}`);
+  }
+
+  if (!data) {
+    throw new Error(`Lead ${lead_id} not found`);
+  }
+
+  return success(
+    { lead: data },
+    { db_reads: [{ table: 'leads', id: lead_id }] }
+  );
 }
 
 /**
@@ -105,14 +272,10 @@ export async function update_stage(input) {
     throw new Error(`Failed to update lead status: ${error.message}`);
   }
 
-  return {
-    result: { lead_id },
-    effects: {
-      db_writes: [
-        { table: 'leads', action: 'update', id: lead_id }
-      ]
-    }
-  };
+  return success(
+    { lead_id },
+    { db_writes: [{ table: 'leads', action: 'update', id: lead_id }] }
+  );
 }
 
 /**
@@ -121,26 +284,38 @@ export async function update_stage(input) {
 export async function add_source(input) {
   const { lead_id, source, campaign } = input;
 
+  const updateData = {
+    source,
+    updated_at: new Date().toISOString()
+  };
+
+  if (campaign) {
+    // Store campaign in metadata
+    const { data: lead } = await supabase
+      .from('leads')
+      .select('metadata')
+      .eq('id', lead_id)
+      .single();
+
+    updateData.metadata = {
+      ...(lead?.metadata || {}),
+      campaign
+    };
+  }
+
   const { error } = await supabase
     .from('leads')
-    .update({
-      source,
-      updated_at: new Date().toISOString()
-    })
+    .update(updateData)
     .eq('id', lead_id);
 
   if (error) {
     throw new Error(`Failed to add source: ${error.message}`);
   }
 
-  return {
-    result: { lead_id },
-    effects: {
-      db_writes: [
-        { table: 'leads', action: 'update', id: lead_id }
-      ]
-    }
-  };
+  return success(
+    { lead_id },
+    { db_writes: [{ table: 'leads', action: 'update', id: lead_id }] }
+  );
 }
 
 /**
@@ -149,10 +324,10 @@ export async function add_source(input) {
 export async function add_photos_link(input) {
   const { lead_id, links } = input;
 
-  // Get current links
+  // Get current metadata
   const { data: lead, error: fetchError } = await supabase
     .from('leads')
-    .select('photo_links')
+    .select('metadata')
     .eq('id', lead_id)
     .single();
 
@@ -160,13 +335,16 @@ export async function add_photos_link(input) {
     throw new Error(`Failed to fetch lead: ${fetchError.message}`);
   }
 
-  const currentLinks = lead.photo_links || [];
+  const currentLinks = lead.metadata?.photo_links || [];
   const newLinks = [...currentLinks, ...links];
 
   const { error } = await supabase
     .from('leads')
     .update({
-      photo_links: newLinks,
+      metadata: {
+        ...lead.metadata,
+        photo_links: newLinks
+      },
       updated_at: new Date().toISOString()
     })
     .eq('id', lead_id);
@@ -175,21 +353,48 @@ export async function add_photos_link(input) {
     throw new Error(`Failed to add photos link: ${error.message}`);
   }
 
-  return {
-    result: { lead_id },
-    effects: {
-      db_writes: [
-        { table: 'leads', action: 'update', id: lead_id }
-      ]
-    }
-  };
+  return success(
+    { lead_id, links_count: newLinks.length },
+    { db_writes: [{ table: 'leads', action: 'update', id: lead_id }] }
+  );
 }
 
 /**
  * leads.schedule_inspection - Create an inspection appointment for a lead
  */
 export async function schedule_inspection(input) {
-  const { lead_id, preferred_window, notes } = input;
+  const { lead_id, preferred_window, notes, site_address } = input;
+
+  // Get lead info
+  const { data: lead, error: leadError } = await supabase
+    .from('leads')
+    .select('id, address, suburb, leadconnector_contact_id')
+    .eq('id', lead_id)
+    .single();
+
+  if (leadError || !lead) {
+    throw new Error(`Lead ${lead_id} not found`);
+  }
+
+  // Create inspection record
+  const { data: inspection, error: inspError } = await supabase
+    .from('inspections')
+    .insert({
+      lead_id,
+      leadconnector_contact_id: lead.leadconnector_contact_id,
+      site_address: site_address || lead.address,
+      site_suburb: lead.suburb,
+      scheduled_at: preferred_window,
+      notes,
+      status: 'scheduled',
+      created_by: 'leads.schedule_inspection'
+    })
+    .select('id')
+    .single();
+
+  if (inspError) {
+    throw new Error(`Failed to create inspection: ${inspError.message}`);
+  }
 
   // Update lead status
   await supabase
@@ -200,17 +405,15 @@ export async function schedule_inspection(input) {
     })
     .eq('id', lead_id);
 
-  // Generate inspection ID
-  const inspection_id = crypto.randomUUID();
-
-  return {
-    result: { inspection_id },
-    effects: {
+  return success(
+    { lead_id, inspection_id: inspection.id },
+    { 
       db_writes: [
+        { table: 'inspections', action: 'insert', id: inspection.id },
         { table: 'leads', action: 'update', id: lead_id }
       ]
     }
-  };
+  );
 }
 
 /**
@@ -218,7 +421,7 @@ export async function schedule_inspection(input) {
  * Note: Uses `status` column (not `stage`)
  */
 export async function list_by_stage(input) {
-  const { stage, suburb, source, limit = 50 } = input;
+  const { stage, suburb, source, limit = 50 } = input || {};
 
   let query = supabase
     .from('leads')
@@ -244,10 +447,10 @@ export async function list_by_stage(input) {
     throw new Error(`Failed to list leads: ${error.message}`);
   }
 
-  return {
-    result: { leads: data || [] },
-    effects: {}
-  };
+  return success(
+    { leads: data || [], count: data?.length || 0 },
+    { db_reads: [{ table: 'leads', count: data?.length || 0 }] }
+  );
 }
 
 /**
@@ -256,11 +459,22 @@ export async function list_by_stage(input) {
 export async function mark_lost(input) {
   const { lead_id, reason, notes } = input;
 
+  // Get current lead
+  const { data: lead } = await supabase
+    .from('leads')
+    .select('metadata')
+    .eq('id', lead_id)
+    .single();
+
   const { error } = await supabase
     .from('leads')
     .update({
       status: 'lost',
-      lost_reason: reason,
+      metadata: {
+        ...(lead?.metadata || {}),
+        lost_reason: reason,
+        lost_at: new Date().toISOString()
+      },
       notes: notes || null,
       updated_at: new Date().toISOString()
     })
@@ -270,12 +484,8 @@ export async function mark_lost(input) {
     throw new Error(`Failed to mark lead lost: ${error.message}`);
   }
 
-  return {
-    result: { lead_id },
-    effects: {
-      db_writes: [
-        { table: 'leads', action: 'update', id: lead_id }
-      ]
-    }
-  };
+  return success(
+    { lead_id, status: 'lost' },
+    { db_writes: [{ table: 'leads', action: 'update', id: lead_id }] }
+  );
 }
