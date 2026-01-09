@@ -6,10 +6,9 @@
  * Provides natural language interaction with memory persistence.
  *
  * Usage:
- *   node scripts/gemo.js                    # Start new or resume session
- *   node scripts/gemo.js --session <uuid>   # Resume specific session
- *   node scripts/gemo.js --new              # Force new session
- *   node scripts/gemo.js --help             # Show help
+ *   gemo                    # Start or resume session
+ *   gemo --new              # Force new session
+ *   gemo --help             # Show help
  */
 
 import readline from 'readline';
@@ -17,55 +16,49 @@ import { createOperator } from '../src/operator.js';
 import { checkLLMConfig } from '../src/lib/llm.js';
 
 // ANSI colors
-const colors = {
+const c = {
   reset: '\x1b[0m',
-  bright: '\x1b[1m',
+  bold: '\x1b[1m',
   dim: '\x1b[2m',
   red: '\x1b[31m',
   green: '\x1b[32m',
   yellow: '\x1b[33m',
   blue: '\x1b[34m',
   magenta: '\x1b[35m',
-  cyan: '\x1b[36m'
+  cyan: '\x1b[36m',
+  white: '\x1b[37m'
 };
 
-function color(text, c) {
-  return `${colors[c] || ''}${text}${colors.reset}`;
-}
-
 function printBanner() {
-  console.log(color(`
-═══════════════════════════════════════════════════════════════════════════════
-CKR-GEM INTERACTIVE OPERATOR
-═══════════════════════════════════════════════════════════════════════════════
-`, 'cyan'));
+  console.log(`
+${c.cyan}╔═══════════════════════════════════════╗
+║           ${c.bold}GEM OPERATOR${c.reset}${c.cyan}                ║
+║     Call Kaids Roofing System         ║
+╚═══════════════════════════════════════╝${c.reset}
+`);
 }
 
 function printHelp() {
   console.log(`
-${color('GEM Operator Interactive CLI', 'bright')}
+${c.bold}GEM Operator${c.reset} - Natural language interface to GEM
 
-${color('Usage:', 'yellow')}
-  gemo                         Start or resume session
-  gemo --session <uuid>        Resume specific session
-  gemo --new                   Force new session
-  gemo --help                  Show this help
+${c.yellow}Usage:${c.reset}
+  gemo              Start or resume session
+  gemo --new        Start fresh session
+  gemo --help       Show this help
 
-${color('In-session commands:', 'yellow')}
-  :help                        Show all commands
-  :mode <mode>                 Set mode (analyze, plan, enqueue, execute)
-  :approve                     Toggle approval for execution
-  :memory                      Show memory status
-  :history [n]                 Show recent history
-  :quit                        Exit
+${c.yellow}In-session:${c.reset}
+  Just type naturally - I'll figure out what you need.
+  
+  :help             Show commands
+  :status           Quick system check
+  :quit             Exit
 
-${color('Examples:', 'yellow')}
-  "system status"              Check system health
-  "create task: call John"     Create a new task
-  "new lead: Jane 0400123456"  Create a new lead
-  "highlevel status"           Check HighLevel integration
-
-Type naturally - I'll understand what you need.
+${c.yellow}Examples:${c.reset}
+  "system status"
+  "create task: call John tomorrow"
+  "new lead: Sarah 0412345678 in Penrith"
+  "highlevel status"
 `);
 }
 
@@ -113,11 +106,10 @@ async function main() {
   // Check LLM configuration
   const llmConfig = checkLLMConfig();
   if (!llmConfig.configured) {
-    console.log(color('[Warning] No LLM API key configured. Running in rules-only mode.', 'yellow'));
-    console.log(color('Set OPENROUTER_API_KEY or ANTHROPIC_API_KEY for natural conversation.', 'dim'));
-    console.log();
+    console.log(`${c.yellow}⚠ No LLM key - running in basic mode${c.reset}`);
+    console.log(`${c.dim}Set OPENROUTER_API_KEY for natural conversation${c.reset}`);
   } else {
-    console.log(color(`[LLM] Using ${llmConfig.provider} with ${llmConfig.model}`, 'dim'));
+    console.log(`${c.dim}LLM: ${llmConfig.provider}${c.reset}`);
   }
 
   // Initialize operator
@@ -127,24 +119,24 @@ async function main() {
     operator = await createOperator(sessionId);
     
     const memStats = operator.memory.getStats();
-    console.log(color(`[Memory] ${args.forceNew ? 'New' : 'Loaded'} session ${operator.getSessionId()} (${memStats.entry_count} entries)`, 'dim'));
-    console.log();
+    const sessionShort = operator.getSessionId()?.slice(0, 8) || 'new';
+    console.log(`${c.dim}Session: ${sessionShort}... (${memStats.entry_count} entries)${c.reset}`);
   } catch (error) {
-    console.error(color(`[Error] Failed to initialize: ${error.message}`, 'red'));
-    console.log(color('Continuing without persistence...', 'yellow'));
+    console.error(`${c.red}Init error: ${error.message}${c.reset}`);
+    console.log(`${c.yellow}Continuing without persistence...${c.reset}`);
     operator = await createOperator(null);
   }
+
+  console.log();
+  console.log(`${c.dim}Type naturally or :help for commands${c.reset}`);
+  console.log();
 
   // Set up readline
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
-    prompt: color('operator> ', 'green')
+    prompt: `${c.green}>${c.reset} `
   });
-
-  console.log('Type your message and press Enter.');
-  console.log(color('Commands: :help for full list', 'dim'));
-  console.log();
 
   rl.prompt();
 
@@ -157,12 +149,22 @@ async function main() {
     }
 
     try {
+      // Show thinking indicator for non-commands
+      if (!input.startsWith(':')) {
+        process.stdout.write(`${c.dim}...${c.reset}`);
+      }
+
       const result = await operator.process(input);
+      
+      // Clear thinking indicator
+      if (!input.startsWith(':')) {
+        process.stdout.write('\r   \r');
+      }
       
       console.log();
       
       if (result.response) {
-        // Format response nicely
+        // Format response - indent multi-line responses
         const lines = result.response.split('\n');
         for (const line of lines) {
           console.log(line);
@@ -176,8 +178,10 @@ async function main() {
       
       console.log();
     } catch (error) {
+      // Clear thinking indicator
+      process.stdout.write('\r   \r');
       console.log();
-      console.log(color(`[Error] ${error.message}`, 'red'));
+      console.log(`${c.red}Error: ${error.message}${c.reset}`);
       console.log();
     }
 
@@ -186,20 +190,19 @@ async function main() {
 
   rl.on('close', () => {
     console.log();
-    console.log(color('Session saved. Goodbye!', 'cyan'));
+    console.log(`${c.cyan}Session saved. See you! 👋${c.reset}`);
     process.exit(0);
   });
 
   // Handle Ctrl+C gracefully
   process.on('SIGINT', () => {
     console.log();
-    console.log(color('\nSession saved. Goodbye!', 'cyan'));
+    console.log(`${c.cyan}Session saved. See you! 👋${c.reset}`);
     process.exit(0);
   });
 }
 
 main().catch(error => {
-  console.error(color(`Fatal error: ${error.message}`, 'red'));
-  console.error(error.stack);
+  console.error(`${c.red}Fatal: ${error.message}${c.reset}`);
   process.exit(1);
 });
