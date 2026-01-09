@@ -196,6 +196,93 @@ const RULES = [
       return { stage };
     },
     confidence: 'high'
+  },
+
+  // ============================================
+  // HIGHLEVEL / LEADCONNECTOR INTEGRATION RULES
+  // ============================================
+
+  // HighLevel status / health check
+  {
+    patterns: [
+      /^highlevel\s+status$/i,
+      /^(check\s+)?highlevel\s+health$/i,
+      /^highlevel\s+health\s*check$/i,
+      /^(ghl|leadconnector)\s+status$/i,
+      /^(ghl|leadconnector)\s+health\s*check$/i,
+      /^check\s+(ghl|highlevel|leadconnector)\s+(status|health)$/i,
+      /^is\s+highlevel\s+(working|connected|up)$/i
+    ],
+    tool: 'integrations.highlevel.health_check',
+    extract: () => ({}),
+    confidence: 'high'
+  },
+
+  // Sync HighLevel contacts (basic)
+  {
+    patterns: [
+      /^sync\s+highlevel\s+contacts$/i,
+      /^highlevel\s+contact\s+sync$/i,
+      /^sync\s+(ghl|leadconnector)\s+contacts$/i,
+      /^(ghl|leadconnector)\s+contact\s+sync$/i,
+      /^pull\s+contacts\s+from\s+(highlevel|ghl|leadconnector)$/i,
+      /^import\s+(highlevel|ghl|leadconnector)\s+contacts$/i
+    ],
+    tool: 'integrations.highlevel.sync_contacts',
+    extract: () => ({}),
+    confidence: 'high'
+  },
+
+  // Sync HighLevel contacts with since filter
+  {
+    patterns: [
+      /^sync\s+highlevel\s+contacts\s+since\s+(\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z?)?)$/i,
+      /^sync\s+(ghl|leadconnector)\s+contacts\s+since\s+(\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z?)?)$/i,
+      /^highlevel\s+contacts\s+since\s+(\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z?)?)$/i
+    ],
+    tool: 'integrations.highlevel.sync_contacts',
+    extract: (match) => {
+      // Normalize the date to ISO format
+      let since = match[1] || match[2];
+      // If just a date (YYYY-MM-DD), add time
+      if (/^\d{4}-\d{2}-\d{2}$/.test(since)) {
+        since = `${since}T00:00:00Z`;
+      }
+      return { since };
+    },
+    confidence: 'high'
+  },
+
+  // Sync HighLevel contacts dry run
+  {
+    patterns: [
+      /^sync\s+highlevel\s+contacts\s+dry\s*run$/i,
+      /^highlevel\s+contact\s+sync\s+dry\s*run$/i,
+      /^sync\s+(ghl|leadconnector)\s+contacts\s+dry\s*run$/i,
+      /^dry\s*run\s+highlevel\s+contact\s+sync$/i,
+      /^test\s+highlevel\s+contact\s+sync$/i,
+      /^preview\s+highlevel\s+contact\s+sync$/i
+    ],
+    tool: 'integrations.highlevel.sync_contacts',
+    extract: () => ({ dry_run: true }),
+    confidence: 'high'
+  },
+
+  // Sync HighLevel contacts with since filter AND dry run
+  {
+    patterns: [
+      /^sync\s+highlevel\s+contacts\s+since\s+(\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z?)?)\s+dry\s*run$/i,
+      /^sync\s+highlevel\s+contacts\s+dry\s*run\s+since\s+(\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z?)?)$/i
+    ],
+    tool: 'integrations.highlevel.sync_contacts',
+    extract: (match) => {
+      let since = match[1];
+      if (/^\d{4}-\d{2}-\d{2}$/.test(since)) {
+        since = `${since}T00:00:00Z`;
+      }
+      return { since, dry_run: true };
+    },
+    confidence: 'high'
   }
 ];
 
@@ -270,7 +357,7 @@ export function planFromRules(message, context = {}) {
   return {
     toolCalls: [],
     confidence: 'none',
-    reason: 'No matching rules found for this message. Try: "system status", "create task [title]", "new lead [name] [phone] in [suburb]", or "create note [content]"'
+    reason: 'No matching rules found for this message. Try: "system status", "create task [title]", "new lead [name] [phone] in [suburb]", "create note [content]", "highlevel status", or "sync highlevel contacts"'
   };
 }
 
@@ -287,5 +374,11 @@ export function getHelpText() {
 - "new lead: [name] [phone] in [suburb]" → Create a lead
 - "list leads" → Show leads
 - "search notes for [query]" → Search notes
-- "calculate totals [quote_id]" → Calculate quote totals`;
+- "calculate totals [quote_id]" → Calculate quote totals
+
+HighLevel Integration:
+- "highlevel status" → Check HighLevel API connectivity
+- "sync highlevel contacts" → Sync contacts from HighLevel
+- "sync highlevel contacts since 2026-01-01" → Sync contacts updated after date
+- "sync highlevel contacts dry run" → Preview sync without writing to DB`;
 }
