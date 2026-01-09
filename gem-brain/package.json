@@ -1,16 +1,20 @@
 {
   "name": "gem-brain",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
-  "description": "AI Brain layer for GEM - translates messages into registry-valid tool calls",
+  "description": "AI Brain layer for GEM - translates messages into registry-valid tool calls with conversational LLM",
   "engines": {
     "node": ">=20"
+  },
+  "bin": {
+    "gemo": "./scripts/gemo.js"
   },
   "scripts": {
     "start": "node src/server.js",
     "brain": "node scripts/brain.js",
-    "verify": "node --check src/server.js && node --check scripts/brain.js && echo 'All syntax checks passed'"
+    "gemo": "node scripts/gemo.js",
+    "verify": "node --check src/server.js && node --check scripts/brain.js && node --check scripts/gemo.js && node --check src/operator.js && echo 'All syntax checks passed'"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
