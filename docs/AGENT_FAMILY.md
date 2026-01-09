@@ -479,65 +479,84 @@ The agent family is working when:
 - Architectural decisions: `/docs/DECISIONS.md`
 - Repository guide: `/CLAUDE.md`
 
-## Skills: Agent Power Tools
+## Commands: Agent Power Tools
 
-The agent family is **amplified** (not replaced) by **Claude Skills** - deterministic, narrow, refusal-happy tools that agents invoke to execute known-safe workflows.
+The agent family is **amplified** (not replaced) by **Claude Commands** - deterministic, narrow, refusal-happy tools that agents invoke to execute known-safe workflows.
 
-### Skills Philosophy
+### Commands Philosophy
 
-**Skills execute, agents decide.**
+**Commands execute, agents decide.**
 
-- Skills are deterministic, schema-bound, and opinionated
-- Skills refuse if inputs are incomplete or ambiguous
-- Skills never guess, never "do their best", never make judgments
-- Skills strengthen agent biases without flattening them
+- Commands are deterministic, schema-bound, and opinionated
+- Commands refuse if inputs are incomplete or ambiguous
+- Commands never guess, never "do their best", never make judgments
+- Commands strengthen agent biases without flattening them
 
-### Available Skills
+### Available Commands
 
-All Skills are documented in `.claude/skills/`:
+All commands are in `.claude/commands/`:
 
-#### Wave 1: Foundation
+#### Foundation Commands
 
 1. **handler-skeleton-generate** - Generate handler function skeletons
    - **Used by**: gem-pragmatic-shipper, gem-contract-enforcer
    - **Impact**: 90% reduction in boilerplate
-   - **Strengthens**: Pragmatic ships 10x faster, Contract enforces patterns
 
 2. **contract-drift-detect** - Compare handlers against registry contracts
    - **Used by**: gem-paranoid-validator, gem-contract-enforcer
    - **Impact**: Automated contract violation detection
-   - **Strengthens**: Paranoid finds violations, Contract enforces automatically
 
 3. **receipt-validate** - Verify receipts match doctrine exactly
    - **Used by**: gem-paranoid-validator, gem-contract-enforcer
    - **Impact**: Enforces "one receipt per call" rule
-   - **Strengthens**: Paranoid validates claims, Contract prevents doctrine drift
 
-#### Wave 2: Acceleration
+#### Testing Commands
 
 4. **test-case-generate** - Generate SQL test inserts and verification queries
    - **Used by**: gem-pragmatic-shipper, gem-paranoid-validator
    - **Impact**: 90% reduction in test authoring time
-   - **Strengthens**: Pragmatic ships tests faster, Paranoid tests more scenarios
 
-5. **error-message-audit** - Audit error messages for clarity and actionability
+5. **verification-sql-generator** - Generate comprehensive verification SQL
+   - **Used by**: gem-paranoid-validator
+   - **Impact**: Systematic verification of tool behavior
+
+#### UX Commands
+
+6. **error-message-audit** - Audit error messages for clarity and actionability
    - **Used by**: gem-user-advocate, gem-paranoid-validator
    - **Impact**: Systematic UX improvement
-   - **Strengthens**: User Advocate audits all handlers, Paranoid finds ambiguous errors
 
-### Skills Invocation Matrix
+#### Workflow Commands
 
-| Skill | Paranoid | Pragmatic | Architect | User | Performance | Contract |
-|-------|----------|-----------|-----------|------|-------------|----------|
+7. **tool-call-builder** - Build tool call payloads interactively
+   - **Used by**: gem-pragmatic-shipper
+   - **Impact**: Faster tool testing
+
+8. **inspection-packet-normaliser** - Normalize inspection data
+   - **Used by**: gem-contract-enforcer
+   - **Impact**: Consistent inspection data structure
+
+9. **receipt-expectation-generator** - Generate expected receipt structures
+   - **Used by**: gem-paranoid-validator, gem-contract-enforcer
+   - **Impact**: Clear receipt expectations for testing
+
+### Commands Invocation Matrix
+
+| Command | Paranoid | Pragmatic | Architect | User | Performance | Contract |
+|---------|----------|-----------|-----------|------|-------------|----------|
 | handler-skeleton-generate | ❌ | ✅ | ✅ | ❌ | ❌ | ✅ |
 | contract-drift-detect | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ |
 | receipt-validate | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ |
 | test-case-generate | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| verification-sql-generator | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | error-message-audit | ✅ | ❌ | ❌ | ✅ | ❌ | ❌ |
+| tool-call-builder | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| inspection-packet-normaliser | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| receipt-expectation-generator | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ |
 
-### Skills + Agents Workflow
+### Commands + Agents Workflow
 
-Example: Implementing a new tool with Skills
+Example: Implementing a new tool with Commands
 
 ```
 1. gem-architect-visionary
@@ -545,31 +564,31 @@ Example: Implementing a new tool with Skills
    → Defines tool contract
 
 2. gem-pragmatic-shipper
-   → Invokes handler-skeleton-generate Skill
+   → Invokes handler-skeleton-generate command
    → Gets handler template in 30 seconds
    → Implements business logic
-   → Invokes test-case-generate Skill
+   → Invokes test-case-generate command
    → Gets test SQL instantly
 
 3. gem-contract-enforcer
-   → Invokes contract-drift-detect Skill
+   → Invokes contract-drift-detect command
    → Verifies no violations
 
 4. gem-paranoid-validator
-   → Invokes receipt-validate Skill
+   → Invokes receipt-validate command
    → Verifies receipts match doctrine
    → Runs generated tests
 
 5. gem-user-advocate
-   → Invokes error-message-audit Skill
+   → Invokes error-message-audit command
    → Improves error messages
 ```
 
 **Result**: 80% time savings, 100% contract compliance, comprehensive testing
 
-### Skills Governance
+### Commands Governance
 
-**New Skill Creation Criteria** (ALL must be true):
+**New Command Creation Criteria** (ALL must be true):
 1. Deterministic (100% predictable)
 2. Narrow (single responsibility)
 3. Non-judgmental (requires zero interpretation)
@@ -578,24 +597,24 @@ Example: Implementing a new tool with Skills
 6. Bias-preserving (strengthens agents without flattening)
 7. Quality-bar (passes all 5 agent checks)
 
-**Skills Retirement**: A Skill MUST be retired if:
+**Command Retirement**: A command MUST be retired if:
 - Superseded by native tooling
 - Drift from GEM patterns
 - Unused for 30 days
 - Refusal rate > 50%
 - Violates GEM hard laws
 
-### Skills vs Agents
+### Commands vs Agents
 
-| Aspect | Agents | Skills |
-|--------|--------|--------|
+| Aspect | Agents | Commands |
+|--------|--------|----------|
 | Purpose | Decide what to do | Execute known workflows |
 | Judgment | Make judgments | Never guess |
 | Bias | Intentional bias | No bias, deterministic |
 | Output | Analysis, recommendations | Structured artifacts |
 | Failure Mode | Disagree productively | Refuse clearly |
 
-**Key Principle**: Skills make agents more effective without making them less distinctive.
+**Key Principle**: Commands make agents more effective without making them less distinctive.
 
 ## Contributing to the Family
 
@@ -612,12 +631,12 @@ Proposed agents are reviewed for:
 - **Complementary**: Creates productive tension with existing agents
 - **Grounded**: References real code, not abstract concepts
 
-New Skills should:
-1. Meet all 7 creation criteria (see Skills Governance)
+New commands should:
+1. Meet all 7 creation criteria (see Commands Governance)
 2. Strengthen at least one agent bias
 3. Not flatten any agent bias
 4. Pass the 5-agent quality bar
 
 ---
 
-*The agent family represents a room full of extraordinary savants who complement each other through different perspectives, amplified by deterministic Skills that eliminate toil without eliminating judgment, creating emergent quality without drift or hallucination.*
+*The agent family represents a room full of extraordinary savants who complement each other through different perspectives, amplified by deterministic commands that eliminate toil without eliminating judgment, creating emergent quality without drift or hallucination.*

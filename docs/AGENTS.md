@@ -80,8 +80,36 @@ SELECT * FROM core_tool_receipts ORDER BY created_at DESC LIMIT 1;
 
 ### Brain
 ```bash
-node scripts/brain.js -m "system status" -M answer
+# CLI testing
+cd gem-brain
+node scripts/brain.js "system status"
+node scripts/brain.js "create task: test task"
+
+# E2E inspection flow
+node gem-core/tests/inspection_flow_e2e.js
 ```
+
+## Claude Code Resources
+
+### Agents (`.claude/agents/`)
+Specialized agents with intentional biases for different tasks:
+- `gem-contract-enforcer` - Registry and contract validation
+- `gem-paranoid-validator` - Edge case and race condition detection
+- `gem-pragmatic-shipper` - Fast implementation focus
+- `gem-architect-visionary` - Long-term design
+- `gem-user-advocate` - DX and error message improvement
+- `gem-performance-hawk` - Optimization focus
+
+See `/docs/AGENT_FAMILY.md` for full documentation.
+
+### Commands (`.claude/commands/`)
+Deterministic tools for common workflows:
+- `contract-drift-detect` - Find schema mismatches
+- `handler-skeleton-generate` - Generate handler boilerplate
+- `receipt-validate` - Validate receipt structure
+- `test-case-generate` - Generate test SQL
+- `tool-call-builder` - Build tool call payloads
+- `verification-sql-generator` - Generate verification queries
 
 ## Documentation Update Rule
 

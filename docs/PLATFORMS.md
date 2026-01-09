@@ -46,14 +46,35 @@ LOG_LEVEL=info
 | `core_tool_receipts` | Execution results |
 | `brain_runs` | Brain request audit log |
 
+### Domain Tables
+
+| Table | Purpose |
+|-------|---------|
+| `leads` | Lead records (unique on phone) |
+| `inspections` | Inspection records with JSONB payload |
+| `inspection_packets` | Normalized inspection data |
+| `media_assets` | Media asset registry |
+| `quotes`, `quote_line_items` | Quote system |
+| `jobs`, `invoices` | Job and billing |
+| `tasks`, `notes` | OS domain |
+
+### Analytics Views (migration 009)
+
+- `gem_tool_execution_stats` - Per-tool execution statistics
+- `gem_recent_failures` - Recent failed calls
+- `gem_queue_depth` - Current queue depth by tool
+- `gem_worker_activity` - Worker load over 24h
+
 ### RPC Functions
 
 - `claim_next_core_tool_call(p_worker_id)` - Atomic job claim
+- `gem_check_tool_health(tool_name)` - Tool health metrics
+- `gem_get_pipeline_progress(inspection_id)` - Pipeline tracking
 
 ### Migrations
 
 Core system: `gem-core/sql/`
-Domain tables: `gem-core/migrations/`
+Domain tables: `gem-core/migrations/` (001-009 deployed)
 Brain tables: `gem-brain/sql/`
 
 ## Termux (Separate System)

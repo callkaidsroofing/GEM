@@ -1,8 +1,8 @@
 # GEM System
 
-GEM (General Execution Manager) is a registry-driven tool execution system for Call Kaids Roofing. Two services run on Render, both backed by Supabase.
+GEM (General Execution Manager) is a registry-driven tool execution system for Call Kaids Roofing. A monorepo with three modules, two running as services on Render, all backed by Supabase.
 
-## Services
+## Modules
 
 ### GEM-CORE Executor (`/gem-core`)
 - Render background worker
@@ -18,6 +18,11 @@ GEM (General Execution Manager) is a registry-driven tool execution system for C
 - HTTP API: `POST /brain/run`
 - CLI: `node scripts/brain.js`
 - Start: `npm start`
+
+### GEM Shared (`/gem-shared`)
+- Shared contracts, schemas, and validation utilities
+- Used by both gem-core and gem-brain
+- Not deployed as a service
 
 ## Data Flow
 
@@ -48,10 +53,10 @@ No silent success. No missing receipts.
 
 `gem-core/tools.registry.json` defines all 99 tools:
 - Names, schemas, idempotency rules
-- 40 have real implementations
-- 59 return `not_configured`
+- ~50 have real implementations
+- ~49 return `not_configured`
 
-Registry is read-only at runtime. Do not modify.
+See `/docs/STATE.md` for current coverage. Registry is read-only at runtime.
 
 ## Boundaries
 

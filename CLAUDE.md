@@ -4,103 +4,61 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-GEM (General Execution Manager) is a **registry-driven, contract-first tool execution system** for Call Kaids Roofing. It's a monorepo containing two services that communicate via Supabase:
+GEM (General Execution Manager) is a **registry-driven, contract-first tool execution system** for Call Kaids Roofing. It's a monorepo with three modules communicating via Supabase:
 
-- **gem-brain/**: AI orchestrator that translates natural language into tool calls
-- **gem-core/**: Background worker that executes tool calls and writes receipts
+- **gem-brain/**: AI orchestrator that translates natural language into tool calls (Render web service)
+- **gem-core/**: Background worker that executes tool calls and writes receipts (Render background worker)
+- **gem-shared/**: Shared contracts, schemas, and validation utilities
 
 **Data Flow**: `Message → Brain → core_tool_calls → Executor → core_tool_receipts`
 
-## Quick Start
-
-### Development Commands
+## Development Commands
 
 ```bash
-# Install dependencies for both modules
+# Install dependencies
 cd gem-core && npm install
 cd ../gem-brain && npm install
 
-# Start the executor (polls and executes)
+# Start executor (polls and executes)
 cd gem-core && npm start
 
-# Start the brain server (HTTP API)
+# Start brain server (HTTP API on port 3000)
 cd gem-brain && npm start
 
-# Run brain CLI for testing
+# Brain CLI for testing
 cd gem-brain && node scripts/brain.js "create a task to call John"
 
-# Verify database schema and connectivity
+# Verify syntax
+cd gem-core && npm run verify
+cd gem-brain && npm run verify
+
+# Check tool coverage
+cd gem-core && npm run coverage
+
+# E2E inspection flow test
+node gem-core/tests/inspection_flow_e2e.js
+
+# Check database connectivity
 cd gem-core && node check_db.js
 ```
 
-### Environment Variables
+## Environment Variables
 
 Both modules require:
 ```bash
 SUPABASE_URL=your_supabase_project_url
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key  # NOT anon key
+```
+
+Brain-specific:
+```bash
+ANTHROPIC_API_KEY=your_api_key  # Required for LLM features
+PORT=3000  # Optional, default 3000
 ```
 
 Executor-specific:
 ```bash
 TOOLS_POLL_INTERVAL_MS=5000  # Optional, default 5000ms
-```
-
-Brain-specific:
-```bash
-PORT=3000  # Optional, default 3000
-ANTHROPIC_API_KEY=your_api_key  # Required for AI features
-```
-
-## Repository Structure
-
-```
-/
-├── docs/                   # Canonical system documentation (READ THESE FIRST)
-│   ├── SYSTEM.md          # High-level architecture
-│   ├── CONSTRAINTS.md     # Hard rules (DO NOT VIOLATE)
-│   ├── STATE.md           # Current phase and implementation status
-│   ├── AGENTS.md          # AI agent guidelines
-│   ├── PLATFORMS.md       # Deployment info (Render)
-│   └── DECISIONS.md       # Locked architectural decisions
-│
-├── gem-core/              # GEM-CORE Executor (Background Worker)
-│   ├── index.js           # Main worker loop
-│   ├── tools.registry.json # Authoritative tool contracts (99 tools)
-│   ├── src/
-│   │   ├── handlers/      # Tool implementations by domain
-│   │   │   ├── leads.js   # Leads domain (create, update, list, etc.)
-│   │   │   ├── quote.js   # Quote domain (create, calculate, send, etc.)
-│   │   │   ├── os.js      # Operating system (tasks, notes, health)
-│   │   │   ├── inspection.js
-│   │   │   ├── invoice.js
-│   │   │   ├── job.js
-│   │   │   ├── entity.js
-│   │   │   ├── comms.js
-│   │   │   └── ... (16 domain handlers total)
-│   │   └── lib/
-│   │       ├── registry.js     # Tool registry loader
-│   │       ├── validate.js     # JSON schema validation
-│   │       ├── idempotency.js  # Duplicate prevention
-│   │       ├── responses.js    # Standard response helpers
-│   │       └── supabase.js     # Database client
-│   ├── sql/               # Database migrations
-│   ├── migrations/        # Incremental schema changes
-│   └── docs/              # Executor-specific docs
-│
-└── gem-brain/             # GEM Brain (Web Service)
-    ├── src/
-    │   ├── brain.js       # Main orchestration logic
-    │   ├── server.js      # HTTP API server
-    │   ├── planner/
-    │   │   └── rules.js   # Pattern-to-tool mapping rules
-    │   └── lib/
-    │       ├── registry.js   # Registry reader (same contract)
-    │       └── supabase.js   # Database client
-    ├── scripts/
-    │   └── brain.js       # CLI interface for testing
-    ├── sql/               # Brain-specific tables
-    └── docs/              # Brain-specific docs
 ```
 
 ## Critical Conventions
@@ -109,35 +67,11 @@ ANTHROPIC_API_KEY=your_api_key  # Required for AI features
 
 **Location**: `gem-core/tools.registry.json`
 
-**NEVER modify this file without understanding full implications**. This single source of truth defines:
-
-- All 99 tool names (domain.method format)
-- Input/output JSON schemas
-- Idempotency modes (`none`, `safe-retry`, `keyed`)
-- Timeout values
-- Permissions
-- Receipt audit fields
-
-**Current Status**: 40 tools implemented, 59 return `not_configured`
+**NEVER modify without understanding full implications**. This single source of truth defines all 99 tool names (domain.method format), input/output JSON schemas, idempotency modes, timeouts, and permissions. See `/docs/STATE.md` for current implementation status.
 
 ### 2. Receipt Contract
 
-Every tool call produces exactly ONE receipt with this structure:
-
-```javascript
-{
-  status: "succeeded" | "failed" | "not_configured",
-  result: { /* tool-specific output */ },
-  effects: {
-    db_writes: [{ table: 'leads', action: 'insert', id: 'uuid' }],
-    messages_sent: [...],     // optional
-    files_written: [...],     // optional
-    external_calls: [...]     // optional
-  }
-}
-```
-
-**Use helper functions** from `gem-core/src/lib/responses.js`:
+Every tool call produces exactly ONE receipt. Use helpers from `gem-core/src/lib/responses.js`:
 
 ```javascript
 import { success, notConfigured, failed } from '../lib/responses.js';
@@ -155,6 +89,8 @@ return notConfigured('calendar.find_slots', {
   next_steps: ['Set up OAuth credentials']
 });
 ```
+
+Receipt structure: `{ status: "succeeded"|"failed"|"not_configured", result: {...}, effects: { db_writes, messages_sent, files_written, external_calls } }`
 
 ### 3. Idempotency Modes
 
@@ -229,31 +165,11 @@ if (error) {
 
 ## Architecture Boundaries
 
-### Brain Responsibilities
-- Parse natural language messages
-- Match against rules to determine tools
-- Validate inputs against registry schemas
-- Enqueue to `core_tool_calls` table
-- Optionally wait for receipts
-- Return structured responses
+**Brain** (gem-brain): Parses messages → matches rules → validates against registry → enqueues to `core_tool_calls`. Does NOT execute tools or access domain tables.
 
-### Executor Responsibilities
-- Poll `core_tool_calls` queue atomically
-- Validate inputs (redundant safety check)
-- Check idempotency
-- Execute handlers with timeout
-- Write receipts to `core_tool_receipts`
-- Update call status
+**Executor** (gem-core): Polls queue → validates → checks idempotency → executes handlers → writes receipts. Does NOT parse messages or have HTTP endpoints.
 
-### What Brain Does NOT Do
-- Execute tool logic directly
-- Access domain tables (leads, quotes, etc.)
-- Make external API calls
-
-### What Executor Does NOT Do
-- Parse natural language
-- Have HTTP endpoints
-- Make decisions about which tools to run
+**Shared** (gem-shared): Common contracts, schemas, validation. Used by both modules.
 
 ## Common Development Tasks
 
@@ -339,112 +255,27 @@ cd gem-brain
 psql $SUPABASE_URL -f tests/brain_verification.sql
 ```
 
-## Database Schema
+## Database Tables
 
-### Core Tables
+**Core tables**: `core_tool_calls` (queue), `core_tool_receipts` (results), `brain_runs` (audit log)
 
-**`core_tool_calls`**: Queue of tool invocations
-- `id` (UUID, PK)
-- `tool_name` (text, indexed)
-- `input` (jsonb)
-- `status` (text: `queued` → `running` → `succeeded`/`failed`)
-- `claimed_at`, `worker_id` (for atomic claiming)
-- `idempotency_key` (text, optional)
+**Domain tables** (see `gem-core/sql/`): `leads`, `quotes`, `quote_line_items`, `inspections`, `inspection_packets`, `media_assets`, `jobs`, `invoices`, `tasks`, `notes`, `entities`, `comms_log`
 
-**`core_tool_receipts`**: Execution results (exactly one per call)
-- `call_id` (UUID, FK to core_tool_calls)
-- `tool_name` (text)
-- `status` (text: `succeeded`, `failed`, `not_configured`)
-- `result` (jsonb)
-- `effects` (jsonb)
-
-**`brain_runs`**: Brain request/response audit log
-- `id` (UUID, PK)
-- `request` (jsonb)
-- `response` (jsonb)
-- `status` (text)
-
-### Domain Tables
-
-Located in `gem-core/sql/004_minimal_domain_tables.sql`:
-- `notes`, `tasks`
-- `leads` (with unique constraint on `phone`)
-- `quotes`, `quote_line_items`
-- `entities`, `jobs`, `invoices`, `inspections`, `comms_log`
+**Analytics views** (migration 009): `gem_tool_execution_stats`, `gem_recent_failures`, `gem_queue_depth`, `gem_worker_activity`
 
 ## Key Implementation Details
 
 ### Atomic Job Claiming
 
-Uses `claim_next_core_tool_call(p_worker_id TEXT)` RPC:
-- `FOR UPDATE SKIP LOCKED` prevents race conditions
-- Atomically updates `queued` → `running`
-- Sets `claimed_at` and `worker_id`
-- Returns claimed row or null
+Uses `claim_next_core_tool_call(p_worker_id TEXT)` RPC with `FOR UPDATE SKIP LOCKED` for race-free queue processing.
 
-### Handler Return Format
+### Status Column Mapping
 
-```javascript
-{
-  result: { /* matches output_schema */ },
-  effects: {
-    db_writes: [{ table, action, id }],  // Audit trail
-    messages_sent: [...],                 // For comms tools
-    files_written: [...],                 // For media/export tools
-    external_calls: [...]                 // For integration tools
-  }
-}
-```
+**The `leads` table uses `status` column, NOT `stage`**. Registry defines parameter as `stage` for API consistency; handlers map `input.stage` → database `status`. See `gem-core/src/handlers/leads.js:90`.
 
-### Status Column Mapping (Important!)
+### Keyed Idempotency
 
-**The `leads` table uses `status` column, NOT `stage`**:
-- Registry defines parameter as `stage` for API consistency
-- Handlers MUST map: `input.stage` → database `status` column
-- See `gem-core/src/handlers/leads.js:90` and `:230` for examples
-
-### Keyed Idempotency Implementation
-
-For tools with `idempotency.mode: "keyed"`:
-
-```javascript
-// 1. Check for existing record
-const { data: existing } = await supabase
-  .from('leads')
-  .select('id')
-  .eq('phone', input.phone)
-  .maybeSingle();
-
-if (existing) {
-  return success(
-    { lead_id: existing.id },
-    { db_writes: [], idempotency_hit: true }
-  );
-}
-
-// 2. Insert with race condition handling
-const { data, error } = await supabase
-  .from('leads')
-  .insert({ phone: input.phone, ... })
-  .select('id')
-  .single();
-
-// 3. Handle unique constraint violation
-if (error && error.code === '23505') {
-  const { data: existingAfterRace } = await supabase
-    .from('leads')
-    .select('id')
-    .eq('phone', input.phone)
-    .single();
-
-  if (existingAfterRace) {
-    return success(
-      { lead_id: existingAfterRace.id },
-      { db_writes: [], idempotency_hit: true }
-    );
-  }
-}
-```
+For `idempotency.mode: "keyed"` tools: (1) check for existing record, (2) insert with race handling, (3) catch unique constraint violation (error code `23505`). See `gem-core/src/handlers/leads.js` for reference implementation.
 
 ## Documentation Reading Order
 
@@ -457,17 +288,26 @@ For new contributors, read in this order:
 5. `gem-brain/docs/BRAIN.md` - Brain mechanics
 6. `gem-core/docs/REGISTRY.md` - Deep dive on tool contracts
 
-## Custom Claude Agents
+## Custom Claude Agents and Commands
 
-This repository has specialized Claude Code agents available:
+### Agents (in `.claude/agents/`)
 
-- **gem-contract-enforcer**: Use BEFORE modifying `tools.registry.json` or handler contracts. Validates contract compliance and prevents schema drift.
+- **gem-contract-enforcer**: Use BEFORE modifying `tools.registry.json` or handler contracts
+- **gem-monorepo-agent-factory-builder**: For generating agent specifications
+- **gem-skills-architect**: For designing skill packs with execution plans
+- **gem-paranoid-validator**: For thorough validation checks
+- **gem-pragmatic-shipper**: For shipping features efficiently
 
-- **gem-monorepo-agent-factory-builder**: For generating agent specifications aligned with repo structure and contracts.
+### Commands (in `.claude/commands/`)
 
-- **gem-skills-architect**: For designing skill packs that wrap tools with execution plans, validation gates, and documentation.
+- **contract-drift-detect**: Detect schema drift between registry and handlers
+- **handler-skeleton-generate**: Generate skeleton handler code
+- **receipt-validate**: Validate receipt structure
+- **test-case-generate**: Generate test cases for tools
+- **tool-call-builder**: Build tool call payloads
+- **verification-sql-generator**: Generate verification SQL queries
 
-Invoke these agents proactively when working on contract-level changes or architectural modifications.
+Invoke agents proactively when working on contract-level changes.
 
 ## Common Gotchas
 
@@ -482,72 +322,10 @@ Invoke these agents proactively when working on contract-level changes or archit
 9. **Service role key required** - Anon key doesn't have write permissions for tool calls
 10. **Timeout is per-tool** - Configured in registry, enforced by Promise.race
 
-## Testing Workflows
-
-### End-to-End Test
-
-```bash
-# 1. Start executor in one terminal
-cd gem-core && npm start
-
-# 2. In another terminal, use brain CLI
-cd gem-brain
-node scripts/brain.js "create a business task to review quotes"
-
-# 3. Check receipt
-psql $SUPABASE_URL -c "SELECT * FROM core_tool_receipts ORDER BY created_at DESC LIMIT 1;"
-```
-
-### Unit Test Handler
-
-```javascript
-// gem-core/test/handlers/my_test.js
-import { create } from '../src/handlers/leads.js';
-
-const result = await create({
-  name: 'Test Lead',
-  phone: '+1234567890',
-  suburb: 'Brisbane',
-  service: 'roof_repair'
-});
-
-console.log(result); // { result: { lead_id: '...' }, effects: {...} }
-```
-
-### Verify Registry Coverage
-
-```bash
-cd gem-core
-node scripts/analyze-coverage.js
-```
-
-This shows which tools are implemented vs returning `not_configured`.
-
 ## Deployment
 
-Both services deploy to Render:
-- **gem-core**: Background Worker (always running)
-- **gem-brain**: Web Service (HTTP API)
+Both services deploy to Render (see `/docs/PLATFORMS.md`):
+- **gem-core**: Background Worker → `node index.js`
+- **gem-brain**: Web Service → `node src/server.js`
 
-See `/docs/PLATFORMS.md` for deployment configuration.
-
-Build commands are simple:
-```bash
-npm install  # Both use Node.js 20.x
-```
-
-Start commands:
-```bash
-# gem-core
-node index.js
-
-# gem-brain
-node src/server.js
-```
-
-## Support and Escalation
-
-- For contract questions: Use `gem-contract-enforcer` agent
-- For architectural decisions: Check `/docs/DECISIONS.md` first
-- For phase/status questions: See `/docs/STATE.md`
-- For hard rules: See `/docs/CONSTRAINTS.md`
+Node.js 20.x required.

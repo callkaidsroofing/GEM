@@ -129,6 +129,7 @@ The Brain uses a rules-first planner that maps messages to tool calls without re
 
 ### Supported Patterns
 
+#### OS Domain
 | Pattern | Tool |
 |---------|------|
 | "system status", "health check" | os.health_check |
@@ -136,10 +137,30 @@ The Brain uses a rules-first planner that maps messages to tool calls without re
 | "create task: [title]" | os.create_task |
 | "complete task [uuid]" | os.complete_task |
 | "list tasks" | os.list_tasks |
+| "search notes for [query]" | os.search_notes |
+
+#### Leads Domain
+| Pattern | Tool |
+|---------|------|
 | "new lead: [name] [phone] in [suburb]" | leads.create |
 | "list leads" | leads.list_by_stage |
-| "search notes for [query]" | os.search_notes |
+
+#### Inspection Domain
+| Pattern | Tool |
+|---------|------|
+| "create inspection for lead [uuid]" | inspection.create |
+| "add measurement to [uuid]: [description] [value] [unit]" | inspection.add_measurement |
+| "add defect to [uuid]: [description] [severity]" | inspection.add_defect |
+| "add photo to [uuid]: [file_ref]" | inspection.add_photo_ref |
+| "submit inspection [uuid]" | inspection.submit |
+
+#### Quote Domain
+| Pattern | Tool |
+|---------|------|
+| "create quote from inspection [uuid]" | quote.create_from_inspection |
+| "add item to quote [uuid]: [qty]x [desc] $[price]" | quote.add_item |
 | "calculate totals [quote_id]" | quote.calculate_totals |
+| "finalize quote [uuid]" | quote.finalize |
 
 ### Confidence Levels
 
