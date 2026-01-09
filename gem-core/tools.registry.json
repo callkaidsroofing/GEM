@@ -1189,6 +1189,89 @@
       "idempotency": { "mode": "safe-retry" },
       "timeout_ms": 10000,
       "receipt_fields": ["result.status"]
+    },
+    {
+      "name": "integrations.highlevel.health_check",
+      "description": "Check HighLevel/LeadConnector API connectivity and location access.",
+      "input_schema": { "type": "object", "properties": {} },
+      "output_schema": {
+        "type": "object",
+        "required": ["status", "location_id", "checks"],
+        "properties": {
+          "status": { "type": "string", "enum": ["ok", "degraded", "down"] },
+          "location_id": { "type": "string" },
+          "checks": {
+            "type": "object",
+            "required": ["api"],
+            "properties": {
+              "api": { "type": "boolean" }
+            }
+          }
+        }
+      },
+      "permissions": ["read:integrations"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 15000,
+      "receipt_fields": ["result.status", "result.location_id", "result.checks"]
+    },
+    {
+      "name": "integrations.highlevel.sync_contacts",
+      "description": "Sync contacts from HighLevel/LeadConnector location to local database.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "location_id": {
+            "type": "string",
+            "description": "HighLevel location ID (defaults to env HIGHLEVEL_LOCATION_ID)"
+          },
+          "cursor": {
+            "type": "string",
+            "description": "Pagination cursor from previous sync"
+          },
+          "since": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO timestamp to sync contacts updated after this time"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200,
+            "default": 100,
+            "description": "Number of contacts to fetch per page"
+          },
+          "dry_run": {
+            "type": "boolean",
+            "default": false,
+            "description": "If true, fetch and compute counts but do not write to database"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "required": ["status", "location_id", "counts", "last_sync_at"],
+        "properties": {
+          "status": { "type": "string", "enum": ["ok", "partial", "failed"] },
+          "location_id": { "type": "string" },
+          "counts": {
+            "type": "object",
+            "required": ["fetched", "upserted", "unchanged", "errors"],
+            "properties": {
+              "fetched": { "type": "integer" },
+              "upserted": { "type": "integer" },
+              "unchanged": { "type": "integer" },
+              "errors": { "type": "integer" }
+            }
+          },
+          "cursor": { "type": ["string", "null"] },
+          "next_cursor": { "type": ["string", "null"] },
+          "last_sync_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "permissions": ["read:integrations", "write:db"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 120000,
+      "receipt_fields": ["result.status", "result.counts", "result.next_cursor", "effects.db_writes"]
     }
   ]
 }
