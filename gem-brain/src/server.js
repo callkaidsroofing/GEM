@@ -9,6 +9,8 @@ import Fastify from 'fastify';
 import { runBrain } from './brain.js';
 import { getHelpText } from './planner/rules.js';
 import { getAllTools } from './lib/registry.js';
+import { createOperator } from './operator.js';
+import { checkLLMConfig } from './lib/llm.js';
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -19,14 +21,23 @@ const fastify = Fastify({
   }
 });
 
+// Store active operator sessions
+const operatorSessions = new Map();
+
 /**
  * Health check endpoint
  */
 fastify.get('/health', async (request, reply) => {
+  const llmConfig = checkLLMConfig();
   return {
     status: 'ok',
     service: 'gem-brain',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    llm: {
+      configured: llmConfig.configured,
+      provider: llmConfig.provider,
+      model: llmConfig.model
+    }
   };
 });
 
@@ -55,7 +66,7 @@ fastify.get('/brain/help', async (request, reply) => {
 });
 
 /**
- * Main Brain endpoint
+ * Main Brain endpoint (rules-based)
  *
  * POST /brain/run
  * Body: BrainRunRequest
@@ -110,6 +121,98 @@ fastify.post('/brain/run', {
 });
 
 /**
+ * Operator Chat endpoint (LLM-powered conversational)
+ *
+ * POST /operator/chat
+ * Body: { message, session_id? }
+ * Response: { ok, response, session_id, mode }
+ */
+fastify.post('/operator/chat', {
+  schema: {
+    body: {
+      type: 'object',
+      required: ['message'],
+      properties: {
+        message: { type: 'string', minLength: 1 },
+        session_id: { type: 'string', format: 'uuid', nullable: true }
+      }
+    }
+  }
+}, async (request, reply) => {
+  const { message, session_id } = request.body;
+
+  try {
+    // Get or create operator for this session
+    let operator = session_id ? operatorSessions.get(session_id) : null;
+    
+    if (!operator) {
+      operator = await createOperator(session_id);
+      operatorSessions.set(operator.getSessionId(), operator);
+      
+      // Clean up old sessions (keep last 100)
+      if (operatorSessions.size > 100) {
+        const oldest = operatorSessions.keys().next().value;
+        operatorSessions.delete(oldest);
+      }
+    }
+
+    const result = await operator.process(message);
+
+    return {
+      ok: result.ok,
+      response: result.response,
+      session_id: operator.getSessionId(),
+      mode: result.mode,
+      tool_results: result.toolResults ? {
+        executed: result.toolResults.enqueued?.length || 0,
+        succeeded: result.toolResults.receipts?.filter(r => r.status === 'succeeded').length || 0
+      } : null
+    };
+
+  } catch (error) {
+    fastify.log.error(error);
+    reply.code(500);
+    return {
+      ok: false,
+      response: `Error: ${error.message}`,
+      session_id: session_id || null,
+      mode: 'error'
+    };
+  }
+});
+
+/**
+ * Get operator session info
+ *
+ * GET /operator/session/:session_id
+ */
+fastify.get('/operator/session/:session_id', async (request, reply) => {
+  const { session_id } = request.params;
+  const operator = operatorSessions.get(session_id);
+
+  if (!operator) {
+    reply.code(404);
+    return {
+      ok: false,
+      error: 'Session not found'
+    };
+  }
+
+  const stats = operator.memory.getStats();
+  return {
+    ok: true,
+    session_id,
+    mode: operator.mode,
+    approved: operator.approved,
+    context: operator.context,
+    memory: {
+      entry_count: stats.entry_count,
+      memory_limit: stats.memory_limit
+    }
+  };
+});
+
+/**
  * Error handler
  */
 fastify.setErrorHandler((error, request, reply) => {
@@ -137,12 +240,23 @@ fastify.setErrorHandler((error, request, reply) => {
 async function start() {
   try {
     await fastify.listen({ port: PORT, host: HOST });
+    
+    const llmConfig = checkLLMConfig();
+    
     console.log(`GEM Brain API running on http://${HOST}:${PORT}`);
+    console.log('');
+    console.log('LLM Status:');
+    console.log(`  Configured: ${llmConfig.configured}`);
+    console.log(`  Provider: ${llmConfig.provider || 'none'}`);
+    console.log(`  Model: ${llmConfig.model}`);
+    console.log('');
     console.log('Endpoints:');
-    console.log('  GET  /health      - Health check');
-    console.log('  GET  /brain/tools - List available tools');
-    console.log('  GET  /brain/help  - Get help text');
-    console.log('  POST /brain/run   - Run Brain');
+    console.log('  GET  /health           - Health check');
+    console.log('  GET  /brain/tools      - List available tools');
+    console.log('  GET  /brain/help       - Get help text');
+    console.log('  POST /brain/run        - Run Brain (rules-based)');
+    console.log('  POST /operator/chat    - Operator chat (LLM-powered)');
+    console.log('  GET  /operator/session/:id - Get session info');
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);
