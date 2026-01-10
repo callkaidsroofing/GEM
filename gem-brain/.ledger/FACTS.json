@@ -1,0 +1,19 @@
+{
+  "mode": "GEM-OPERATOR-V2",
+  "created_at": "2026-01-10T19:40:33.170Z",
+  "repo_root": "/data/data/com.termux/files/home/GEM",
+  "termux_safe": true,
+  "network_default": "on",
+  "db_default": "supabase",
+  "secrets_policy": "redact_never_print_tokens",
+  "write_permissions": "queue_only",
+  "brand": {
+    "company": "Call Kaids Roofing",
+    "abn": "39475055075",
+    "phone": "0435 900 709",
+    "email": "info@callkaidsroofing.com.au",
+    "region": "South-East Melbourne",
+    "slogan": "Proof In Every Roof"
+  },
+  "ledger_version": "1.0.0"
+}

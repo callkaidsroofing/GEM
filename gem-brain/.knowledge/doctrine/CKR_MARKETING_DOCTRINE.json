@@ -1,0 +1,2459 @@
+{
+  "kf_id": "KF_MKT_DOCTRINE_01",
+  "title": "Marketing Core Doctrine (CKR)",
+  "version": "1.0.0",
+  "generated_at": "2026-01-11",
+  "business": {
+    "name": "Call Kaids Roofing",
+    "abn": "39475055075",
+    "phone": "0435 900 709",
+    "email": "info@callkaidsroofing.com.au",
+    "base_location": "Clyde North, VIC",
+    "service_region": "South-East Melbourne",
+    "slogan": "Proof In Every Roof"
+  },
+  "brand_doctrine": [
+    "Education and proof. Never hype.",
+    "Real jobsite photos only. Before/after preferred.",
+    "No 'cheapest' language. No scare tactics.",
+    "No fabricated reviews, licences, or warranties.",
+    "Warranty language is realistic and expressed as a range unless job-specific.",
+    "Straight-talking, calm, professional."
+  ],
+  "inspection_doctrine": [
+    "Inspect first (on-roof where safe and accessible).",
+    "Explain condition with photos.",
+    "Recommend only what the roof genuinely needs.",
+    "Write a photo-backed scope the client can keep.",
+    "Full restoration always includes painting."
+  ],
+  "locked_sequences": {
+    "tiled_restoration": [
+      "Rebedding",
+      "Cleaning",
+      "Repointing",
+      "Painting (full restoration only)"
+    ]
+  },
+  "capabilities": {
+    "high_pressure_cleaning": "Up to 4000 PSI where suitable",
+    "soft_wash": true,
+    "moss_treatment": true
+  },
+  "services": [
+    {
+      "canonical_service_name": "Roof Health Check (Inspection + Photo Report)",
+      "variations": [
+        "General condition check (tile or metal)",
+        "Leak-focused check",
+        "Pre-sale roof check",
+        "Post-storm roof check",
+        "Rental / property manager report pack"
+      ],
+      "suitable_roof_types": [
+        "Concrete tile",
+        "Terracotta tile",
+        "Colorbond / steel metal roofing",
+        "Other metal roofing"
+      ],
+      "typical_enquiry_triggers": [
+        "Roof looks tired from the street",
+        "Not sure if the roof is fine or failing",
+        "Ceiling stain or dripping after rain",
+        "Buying or selling and want clarity",
+        "Post-storm concern"
+      ],
+      "proof_captured_on_site": {
+        "photos_minimum": [
+          "Wide shots of all roof planes (front, rear, sides)",
+          "Close-ups of defects",
+          "Junction photos (ridges, valleys, flashings, penetrations)",
+          "Any active leak evidence where accessible"
+        ],
+        "notes_minimum": [
+          "Roof type and observed condition",
+          "Access and safety limitations",
+          "Defect list with severity (urgent, soon, monitor)",
+          "Recommended next steps with reasoning"
+        ]
+      },
+      "safety_constraints_high_level": [
+        "Access dependent",
+        "Weather dependent",
+        "No on-roof inspection when unsafe"
+      ],
+      "exclusions_and_referral_boundaries": [
+        "Plumbing leaks and HVAC leaks",
+        "Internal condensation diagnosis beyond roof interface",
+        "Structural engineering decisions beyond roofing scope"
+      ],
+      "common_objections_and_responses": [
+        {
+          "objection": "Can you quote from the ground?",
+          "response": "Accurate scopes require on-roof photos. Ground quoting increases guesswork and disputes."
+        },
+        {
+          "objection": "Are you just going to recommend a restoration?",
+          "response": "Outcomes range from no work required to full restoration. Photos and condition decide."
+        }
+      ],
+      "outcome_framing_before_after": {
+        "before": "Uncertainty and worry about what is really happening on the roof.",
+        "after": "Clarity with photos, plain-English explanation, and a written scope you can keep."
+      },
+      "ethical_cross_sell_logic": [
+        "Only recommend work that addresses documented defects",
+        "Explicitly state 'monitor only' when no work is required"
+      ]
+    },
+    {
+      "canonical_service_name": "Roof Restorations (Full Restoration includes painting)",
+      "definition_locked": "Full roof restoration always includes painting. If there is no painting, it is not a full restoration.",
+      "variations": [
+        "Tile restoration (concrete)",
+        "Tile restoration (terracotta, suitability dependent)",
+        "Metal roof restoration (Colorbond / zincalume)",
+        "Partial restoration (repairs + stabilisation only, no paint)",
+        "Full restoration (repairs + stabilisation + clean + paint)"
+      ],
+      "suitable_roof_types": [
+        "Structurally sound tiled roofs with repairable defects",
+        "Metal roofs with repairable surface issues (chalking, minor corrosion)",
+        "Roofs where replacement is not the appropriate outcome"
+      ],
+      "typical_enquiry_triggers": [
+        "Moss, lichen, staining, and heavy surface ageing",
+        "Loose ridge caps or failing pointing",
+        "Patchy appearance and uneven finish",
+        "Recurring minor leaks",
+        "Pre-sale uplift with durability"
+      ],
+      "proof_captured_on_site": {
+        "photos_minimum": [
+          "Before wide shots and close-ups",
+          "Ridge stability evidence (cracks, movement)",
+          "Post-clean prep state (surface ready for coating)",
+          "Coating stage photos (primer, coats)",
+          "After wide shots and detail shots"
+        ],
+        "notes_minimum": [
+          "Roof type and condition summary",
+          "Repairs performed",
+          "Coating system used (product tier, primer, coats)",
+          "Access notes and limitations"
+        ]
+      },
+      "safety_constraints_high_level": [
+        "Fall risk and slip risk managed via professional controls",
+        "Work windows depend on weather and roof condition"
+      ],
+      "exclusions_and_referral_boundaries": [
+        "Asbestos roof restoration (refer to licensed removal and re-roof pathway)",
+        "Major structural timber failure (refer builder/carpenter/engineer)",
+        "End-of-life substrates where restoration is false economy (recommend re-roof)"
+      ],
+      "common_objections_and_responses": [
+        {
+          "objection": "Can you just paint it?",
+          "response": "Painting without correct preparation is not restoration. Prep controls adhesion and longevity."
+        },
+        {
+          "objection": "Why so many steps?",
+          "response": "Sequence controls adhesion and water tightness. Each stage is photo-documented."
+        },
+        {
+          "objection": "Is this overkill?",
+          "response": "Recommendations are condition-based. Repairs-only and partial scopes exist where suitable."
+        }
+      ],
+      "outcome_framing_before_after": {
+        "before": "Aged, inconsistent finish and higher risk at known weak points.",
+        "after": "Sealed and protected roof with a uniform finish and documented proof of work."
+      },
+      "ethical_cross_sell_logic": [
+        "Gutter clean recommended when roof debris will load gutters",
+        "Valley replacement only when corrosion/defect is documented",
+        "Painting is not offered as an add-on to repairs-only scopes unless a full restoration is the correct outcome"
+      ],
+      "locked_restoration_sequence_for_tiled_roofs": [
+        "Rebedding first",
+        "Cleaning second (high-pressure or soft wash based on condition)",
+        "Repointing last for adhesion to a clean surface",
+        "Painting for full restoration outcome"
+      ]
+    },
+    {
+      "canonical_service_name": "Roof Painting / Coatings (Industrial Roof Coating Systems)",
+      "variations": [
+        "Concrete tile coating system",
+        "Terracotta coating system (suitability dependent)",
+        "Metal roof coating system",
+        "Full restoration paint stage (default)",
+        "Colour change to modern palettes"
+      ],
+      "suitable_roof_types": [
+        "Sound tile or metal roofs after correct preparation",
+        "Roofs where adhesion conditions can be met"
+      ],
+      "typical_enquiry_triggers": [
+        "Colour fade and UV breakdown",
+        "Chalking and patchiness",
+        "Client wants colour change",
+        "Protection layer as part of full restoration"
+      ],
+      "proof_captured_on_site": {
+        "photos_minimum": [
+          "Post-clean prep photos (critical)",
+          "Primer stage photos",
+          "Final finish uniformity photos"
+        ],
+        "notes_minimum": [
+          "Product system used (Roof Refresh, Roof Protect, or 20-Year Roof Protect)",
+          "Primer type and coats",
+          "Colour and batch details where available",
+          "Cure window notes (weather constraints)"
+        ]
+      },
+      "safety_constraints_high_level": [
+        "Overspray control required",
+        "PPE required for spraying",
+        "Weather windows required for coating performance"
+      ],
+      "exclusions_and_referral_boundaries": [
+        "Painting over failed bedding/pointing",
+        "Painting as substitute for structural repair",
+        "Painting end-of-life substrates where re-roof is required"
+      ],
+      "common_objections_and_responses": [
+        {
+          "objection": "Will it peel or fade quickly?",
+          "response": "Longevity depends on preparation and system selection. We document prep and coat stages."
+        },
+        {
+          "objection": "Can you warranty it for 20 years no matter what?",
+          "response": "Warranty depends on product system and roof suitability. We use realistic ranges and manufacturer terms."
+        }
+      ],
+      "outcome_framing_before_after": {
+        "before": "Faded, chalky, patchy roof surface and reduced street appeal.",
+        "after": "Uniform protective membrane finish with documented coating system and proof photos."
+      },
+      "ethical_cross_sell_logic": [
+        "Only offer coating when roof condition supports adhesion",
+        "If substrate is failing, recommend re-roof rather than coating"
+      ]
+    },
+    {
+      "canonical_service_name": "High-Pressure Washing / Soft Washing / Moss Treatment",
+      "variations": [
+        "High-pressure cleaning up to 4000 PSI where suitable",
+        "Soft wash where pressure is unsuitable",
+        "Moss and lichen treatment (residual inhibit)",
+        "Pre-restoration clean",
+        "Standalone cosmetic clean"
+      ],
+      "suitable_roof_types": [
+        "Concrete tiles (condition dependent)",
+        "Metal roofs (condition dependent)",
+        "Terracotta tiles (often soft wash depending on condition)"
+      ],
+      "typical_enquiry_triggers": [
+        "Visible green/black growth",
+        "Heavy staining",
+        "Preparation for repointing or coating",
+        "Pre-sale uplift"
+      ],
+      "proof_captured_on_site": {
+        "photos_minimum": [
+          "Before and after roof plane shots",
+          "Close-ups of growth removal",
+          "Any defects revealed post-clean"
+        ],
+        "notes_minimum": [
+          "Method chosen and why (pressure vs soft wash)",
+          "Moss treatment used where applicable",
+          "Runoff and gutter load notes"
+        ]
+      },
+      "safety_constraints_high_level": [
+        "Slip risk on wet roof surfaces",
+        "Fall risk managed via professional controls",
+        "Water ingress risk managed by technique and method selection"
+      ],
+      "exclusions_and_referral_boundaries": [
+        "Asbestos surfaces (do not disturb; refer licensed specialists)",
+        "Extremely fragile heritage substrates may require specialist"
+      ],
+      "common_objections_and_responses": [
+        {
+          "objection": "Will high-pressure push water into the house?",
+          "response": "Method is chosen based on roof condition. Soft wash is used when needed."
+        },
+        {
+          "objection": "Will moss come back?",
+          "response": "Growth can return. Treatment helps delay regrowth. Results vary by environment."
+        }
+      ],
+      "outcome_framing_before_after": {
+        "before": "Heavy growth and staining hides defects and ages the whole house visually.",
+        "after": "Clean surface, defects visible for honest assessment, improved water flow."
+      },
+      "ethical_cross_sell_logic": [
+        "If cleaning reveals defects, document and recommend targeted repairs",
+        "No automatic upsell to painting"
+      ]
+    },
+    {
+      "canonical_service_name": "Ridge Capping Rebedding & Repointing (Including Gables)",
+      "variations": [
+        "Repoint only where bedding is sound",
+        "Rebedding + repoint where bedding has failed",
+        "Ridges + hips",
+        "Ridges + gable pointing",
+        "Sectional stabilisation vs whole-roof ridges"
+      ],
+      "suitable_roof_types": [
+        "Tiled roofs only (concrete or terracotta)"
+      ],
+      "typical_enquiry_triggers": [
+        "Cracked pointing",
+        "Mortar in gutters",
+        "Loose ridge caps",
+        "Pre-paint preparation requirement"
+      ],
+      "proof_captured_on_site": {
+        "photos_minimum": [
+          "Movement and crack evidence",
+          "Before and after ridge lines",
+          "Detail shots of finished seal"
+        ],
+        "notes_minimum": [
+          "Metres completed",
+          "Materials used",
+          "Access notes"
+        ]
+      },
+      "safety_constraints_high_level": [
+        "High fall risk at roof apex",
+        "Weather dependent"
+      ],
+      "exclusions_and_referral_boundaries": [
+        "Structural ridge beam or roof framing issues (refer builder/carpenter)"
+      ],
+      "common_objections_and_responses": [
+        {
+          "objection": "It is not leaking yet",
+          "response": "Ridge failure is a storm risk. Stabilisation is preventative maintenance."
+        },
+        {
+          "objection": "Can you just patch the cracks?",
+          "response": "Patch-only fails when bedding is loose. We rebed where required."
+        }
+      ],
+      "outcome_framing_before_after": {
+        "before": "Cracking, movement, and storm vulnerability along the roof spine.",
+        "after": "Secure ridges, clean lines, and sealed junctions."
+      },
+      "ethical_cross_sell_logic": [
+        "Cleaning recommended before repoint where contamination prevents adhesion",
+        "Painting only when a full restoration is the correct outcome"
+      ],
+      "locked_process_order": [
+        "Rebedding first",
+        "Cleaning second",
+        "Repointing last"
+      ]
+    },
+    {
+      "canonical_service_name": "Valley Iron Replacement",
+      "variations": [
+        "Galvanised valleys",
+        "Colorbond valleys",
+        "Valley width upgrade where capacity is an issue"
+      ],
+      "suitable_roof_types": [
+        "Tiled roofs with metal valleys",
+        "Metal roofs with valley flashings (scope dependent)"
+      ],
+      "typical_enquiry_triggers": [
+        "Leak tracing to valley line",
+        "Rust perforation",
+        "Overflow in heavy rain"
+      ],
+      "proof_captured_on_site": {
+        "photos_minimum": [
+          "Corrosion and defect evidence",
+          "Install-stage photos",
+          "Completion photos"
+        ],
+        "notes_minimum": [
+          "Valley material used",
+          "Any adjacent tile repairs",
+          "Access notes"
+        ]
+      },
+      "safety_constraints_high_level": [
+        "Tile removal and temporary openings",
+        "Sharp metal handling",
+        "Weather timing"
+      ],
+      "exclusions_and_referral_boundaries": [
+        "Heritage copper or lead valleys may require specialist",
+        "Major structural valley board rot beyond minor repair"
+      ],
+      "common_objections_and_responses": [
+        {
+          "objection": "Can you just seal it?",
+          "response": "Sealants are temporary when metal is perforated. Replacement restores function."
+        },
+        {
+          "objection": "It only leaks in heavy rain",
+          "response": "Heavy rain is the proof load case. Fix prevents ceiling damage."
+        }
+      ],
+      "outcome_framing_before_after": {
+        "before": "Hidden weak link with elevated leak risk.",
+        "after": "Restored drainage and water tightness along internal roof lines."
+      },
+      "ethical_cross_sell_logic": [
+        "If valley outlet is blocked, recommend gutter clean",
+        "If adjacent tiles are fragile, recommend limited replacements with proof"
+      ]
+    },
+    {
+      "canonical_service_name": "Gutter Cleaning",
+      "variations": [
+        "Hand clean and flush",
+        "Downpipe clearing",
+        "Optional gutter guard education (no maintenance-free claims)"
+      ],
+      "suitable_roof_types": [
+        "All homes with gutters, access dependent"
+      ],
+      "typical_enquiry_triggers": [
+        "Overflow in rain",
+        "Plant growth",
+        "Pre-sale preparation",
+        "Storm debris load"
+      ],
+      "proof_captured_on_site": {
+        "photos_minimum": [
+          "Before and after debris photos",
+          "Downpipe blockage evidence where found"
+        ],
+        "notes_minimum": [
+          "Flow test results",
+          "Any damage noted for referral"
+        ]
+      },
+      "safety_constraints_high_level": [
+        "Ladder and edge risk",
+        "Weather dependent"
+      ],
+      "exclusions_and_referral_boundaries": [
+        "Full gutter replacement (refer as required)",
+        "Underground stormwater drainage blockages (refer plumber)"
+      ],
+      "common_objections_and_responses": [
+        {
+          "objection": "Gutter guards mean no cleaning",
+          "response": "Guards can reduce load but do not eliminate maintenance."
+        },
+        {
+          "objection": "It still drains",
+          "response": "Partial blockages still cause overflow in heavy rain."
+        }
+      ],
+      "outcome_framing_before_after": {
+        "before": "Overflow risk and avoidable water damage risk at eaves and fascia.",
+        "after": "Free flow, reduced stress on roof drainage system."
+      },
+      "ethical_cross_sell_logic": [
+        "If roof is heavily loaded with debris, suggest roof clean",
+        "If gutters are rusted through, refer to replacement"
+      ]
+    },
+    {
+      "canonical_service_name": "Leak Detection",
+      "variations": [
+        "Tile leak tracing",
+        "Metal leak tracing",
+        "Photo mapping of entry points",
+        "Minor fixes where appropriate"
+      ],
+      "suitable_roof_types": [
+        "Tile",
+        "Metal",
+        "Associated junctions and flashings"
+      ],
+      "typical_enquiry_triggers": [
+        "Ceiling staining",
+        "Dripping during rain",
+        "Intermittent leaks",
+        "Previous repairs failed"
+      ],
+      "proof_captured_on_site": {
+        "photos_minimum": [
+          "Entry point photos",
+          "Path mapping where visible",
+          "Fix proof if performed"
+        ],
+        "notes_minimum": [
+          "Likely cause and confidence level",
+          "Next steps if further work is required"
+        ]
+      },
+      "safety_constraints_high_level": [
+        "Wet roof risk",
+        "Electrical caution",
+        "Roof void access risks"
+      ],
+      "exclusions_and_referral_boundaries": [
+        "Plumbing leaks and HVAC leaks",
+        "Internal condensation causes beyond roof interface"
+      ],
+      "common_objections_and_responses": [
+        {
+          "objection": "Can you guarantee it is fixed in one visit?",
+          "response": "Complex leaks can be iterative. We document findings and resolve what is identifiable."
+        },
+        {
+          "objection": "Another roofer could not find it",
+          "response": "We run a proof-led process and show the cause with photos where possible."
+        }
+      ],
+      "outcome_framing_before_after": {
+        "before": "Frustration and uncertainty about the real cause.",
+        "after": "Root cause identified with evidence and a clear fix pathway."
+      },
+      "ethical_cross_sell_logic": [
+        "Recommend broader inspection only when evidence indicates wider ageing",
+        "Do not jump to restoration unless condition supports it"
+      ]
+    },
+    {
+      "canonical_service_name": "Broken Tile Replacement",
+      "variations": [
+        "Single tile replacement",
+        "Multi-tile audit",
+        "Sourcing matching tiles where available",
+        "Temporary protection where matching is delayed"
+      ],
+      "suitable_roof_types": [
+        "Concrete tile",
+        "Terracotta tile"
+      ],
+      "typical_enquiry_triggers": [
+        "Storm damage",
+        "Visible breakage",
+        "Leak under a specific area",
+        "Pre-sale inspection defects"
+      ],
+      "proof_captured_on_site": {
+        "photos_minimum": [
+          "Broken tile evidence",
+          "Replacement installed"
+        ],
+        "notes_minimum": [
+          "Tile type and location",
+          "Matching constraints where relevant"
+        ]
+      },
+      "safety_constraints_high_level": [
+        "Roof walking risk",
+        "Tile fragility risk",
+        "Weather dependent"
+      ],
+      "exclusions_and_referral_boundaries": [
+        "Widespread tile failure approaching end-of-life (recommend restoration or re-roof)"
+      ],
+      "common_objections_and_responses": [
+        {
+          "objection": "One tile will not matter",
+          "response": "One crack can cause water ingress. Replacement prevents ceiling damage."
+        },
+        {
+          "objection": "Will it match perfectly?",
+          "response": "Matching depends on availability. Function first. Best match sourced where possible."
+        }
+      ],
+      "outcome_framing_before_after": {
+        "before": "Water ingress risk at a single point in the roof envelope.",
+        "after": "Roof envelope restored at that point with photo proof."
+      },
+      "ethical_cross_sell_logic": [
+        "If multiple cracks are present, recommend a roof audit scope",
+        "If ridge failure contributes, recommend ridge stabilisation"
+      ]
+    },
+    {
+      "canonical_service_name": "Re-roofing",
+      "variations": [
+        "Tile to tile replacement",
+        "Metal to metal replacement",
+        "Tile to metal conversion",
+        "Sarking upgrades where applicable"
+      ],
+      "suitable_roof_types": [
+        "End-of-life roofs",
+        "Structural or widespread failure",
+        "Asbestos re-roof pathway via licensed removal"
+      ],
+      "typical_enquiry_triggers": [
+        "Repeated leaks across multiple areas",
+        "Extensive deterioration",
+        "Storm or hail damage beyond repair",
+        "Major renovation plans"
+      ],
+      "proof_captured_on_site": {
+        "photos_minimum": [
+          "Before condition",
+          "Strip stage",
+          "Install stage",
+          "Completion"
+        ],
+        "notes_minimum": [
+          "Materials specified",
+          "Compliance documents where applicable",
+          "Warranty documentation"
+        ]
+      },
+      "safety_constraints_high_level": [
+        "Construction-level hazards",
+        "Perimeter protection required",
+        "Weather windows managed"
+      ],
+      "exclusions_and_referral_boundaries": [
+        "Major structural redesign (refer builder/engineer)",
+        "Asbestos removal must be licensed and compliant"
+      ],
+      "common_objections_and_responses": [
+        {
+          "objection": "Can we just restore it?",
+          "response": "If substrate is failing, restoration is false economy. Re-roof is the durable choice."
+        },
+        {
+          "objection": "What if it rains during the job?",
+          "response": "Work is planned in sections with mandatory protection and weather windows."
+        }
+      ],
+      "outcome_framing_before_after": {
+        "before": "Ongoing risk and repeated costs on a failing roof.",
+        "after": "Reset roof lifecycle with documented install and clear warranty path."
+      },
+      "ethical_cross_sell_logic": [
+        "Consider gutters where appropriate to complete drainage outcomes",
+        "Provide insulation and ventilation advice as education, not a hard sell"
+      ]
+    },
+    {
+      "canonical_service_name": "New Roofs",
+      "variations": [
+        "New build roofing",
+        "Extension tie-ins",
+        "Tile or metal installation",
+        "Flashing and valley integration"
+      ],
+      "suitable_roof_types": [
+        "Residential builds",
+        "Extensions",
+        "Small developments (scope dependent)"
+      ],
+      "typical_enquiry_triggers": [
+        "Builder quote requests",
+        "Owner-builder projects",
+        "Extensions and second-storey builds"
+      ],
+      "proof_captured_on_site": {
+        "photos_minimum": [
+          "Install stage",
+          "Flashing detail stages",
+          "Completion"
+        ],
+        "notes_minimum": [
+          "Materials and colours specified",
+          "Compliance and warranty docs as applicable"
+        ]
+      },
+      "safety_constraints_high_level": [
+        "Active site safety coordination",
+        "Weather dependent",
+        "Fall protection as required"
+      ],
+      "exclusions_and_referral_boundaries": [
+        "Design engineering and major structural alterations beyond roofing",
+        "Solar installation is coordinated or referred, not claimed as roofing"
+      ],
+      "common_objections_and_responses": [
+        {
+          "objection": "Why is your quote higher?",
+          "response": "Compare inclusions, compliance, documentation, and warranty clarity, not just price."
+        },
+        {
+          "objection": "Will it match the existing roof?",
+          "response": "Best match sourcing is used. Weathering differences are explained."
+        }
+      ],
+      "outcome_framing_before_after": {
+        "before": "Open structure and project exposure to weather.",
+        "after": "Dried-in, protected structure with clean roofline and documentation."
+      },
+      "ethical_cross_sell_logic": [
+        "Only suggest upgrades that materially reduce risk or improve durability",
+        "Avoid package language and avoid unnecessary add-ons"
+      ]
+    }
+  ],
+  "product_systems": {
+    "roof_refresh": {
+      "name": "Roof Refresh",
+      "tier": "Entry-level acrylic roof coating",
+      "suitable_surfaces": [
+        "Concrete tile (with suitable primer)",
+        "Metal roofs (with suitable metal primer)"
+      ],
+      "system": {
+        "primer_coats": 1,
+        "top_coats": 2,
+        "system_coats_total": 3,
+        "typical_spread_rate_m2_per_litre": "4–5 m²/L per coat (ASSUMPTION, product-guided)"
+      },
+      "application": {
+        "method": [
+          "Airless spray (typical)",
+          "Brush/roller (small areas)"
+        ],
+        "approx_total_dft_microns": "200+ µm total DFT (typical system build, product-guided)"
+      },
+      "finish": {
+        "sheen": [
+          "High-gloss",
+          "Satin (depends on colour/system)"
+        ],
+        "colour_range": "Limited palette of common roof shades"
+      },
+      "warranty_language": {
+        "range_years": "7–10 years (often marketed as 10 years)",
+        "notes": [
+          "Warranty is conditional on correct system and roof suitability",
+          "Previously painted roofs may be excluded from product warranty"
+        ]
+      },
+      "manufacturer_origin": "Industrial Roof Coatings (Australia), Queensland"
+    },
+    "roof_protect_15": {
+      "name": "Roof Protect",
+      "tier": "Standard 15-year roof membrane system",
+      "suitable_surfaces": [
+        "Tile roofs (with correct primer)",
+        "Metal roofs (with correct primer)"
+      ],
+      "system": {
+        "primer_coats": 1,
+        "top_coats": 2,
+        "system_coats_total": 3,
+        "typical_spread_rate_m2_per_litre": "About 6 m²/L per coat (product-guided)"
+      },
+      "application": {
+        "method": [
+          "Airless spray (typical)"
+        ],
+        "approx_total_dft_microns": "Around 250 µm total DFT (approx primer 80 + two coats 90 each)"
+      },
+      "finish": {
+        "sheen": [
+          "High-gloss"
+        ],
+        "colour_range": "Full tintable range with colour matching"
+      },
+      "warranty_language": {
+        "years": 15,
+        "notes": [
+          "Conditional on correct system and roof suitability",
+          "Excludes extreme events and improper application",
+          "Maintenance expectations may apply under manufacturer terms"
+        ]
+      },
+      "manufacturer_origin": "Industrial Roof Coatings (Australia), Queensland"
+    },
+    "roof_protect_20": {
+      "name": "20-Year Roof Protect (Premium Roof Membrane)",
+      "tier": "Premium 20-year roof membrane system",
+      "suitable_surfaces": [
+        "Concrete tile roofs only (product-specific suitability)"
+      ],
+      "system": {
+        "required_primer": "IRC Platinum Primer",
+        "primer_coats": 1,
+        "top_coats": 2,
+        "system_coats_total": 3,
+        "typical_spread_rate_m2_per_litre": "About 6 m²/L per coat (product-guided)"
+      },
+      "application": {
+        "method": [
+          "Airless spray (typical)"
+        ],
+        "approx_total_dft_microns": "Around 270 µm total DFT (product-guided)",
+        "notes": [
+          "Contains UV inhibitors and infrared reflectors (product-described)"
+        ]
+      },
+      "finish": {
+        "sheen": [
+          "High-gloss"
+        ],
+        "colour_range": "Full tintable range with colour matching"
+      },
+      "warranty_language": {
+        "years": 20,
+        "notes": [
+          "Conditional on Platinum Primer system and roof suitability",
+          "Accredited application and maintenance expectations may apply",
+          "Typically not used on metal roofing for 20-year warranty coverage"
+        ]
+      },
+      "manufacturer_origin": "Industrial Roof Coatings (Australia), Queensland"
+    }
+  },
+  "audiences": [
+    "Owner-occupiers (30–65+)",
+    "Families",
+    "Time-poor professionals",
+    "Property managers",
+    "Real estate agents",
+    "Developers",
+    "Pre-sale vendors",
+    "Post-storm callers",
+    "Leaking but unsure why homeowners"
+  ],
+  "angles": [
+    "Peace of mind",
+    "Preventative maintenance",
+    "Resale protection",
+    "Structural clarity",
+    "Cosmetic uplift",
+    "Leak prevention",
+    "Documentation & transparency",
+    "Photo-backed trust"
+  ],
+  "audience_angle_matrix": [
+    {
+      "audience": "Owner-occupiers (30–65+)",
+      "angle": "Peace of mind",
+      "hooks": [
+        "Get clarity on your roof before it becomes a problem. Built for everyday home protection.",
+        "Know what is happening up there, with photos to prove it. Built for everyday home protection.",
+        "A calm plan beats panic repairs in the middle of a storm. Built for everyday home protection."
+      ],
+      "ctas": [
+        "Get Your Free Roof Health Check",
+        "Book Your Roof Assessment",
+        "Call 0435 900 709 to lock in a time"
+      ],
+      "content_ideas": {
+        "reel": "30-second roof check highlights, one issue explained, one fix shown, finish with photo proof. Audience focus: homeowners.",
+        "carousel": "Problem vs cosmetic: 5 slides showing what looks bad from the street vs what matters up top. Audience focus: homeowners.",
+        "single_image": "Before/after split with one caption line: what we found, what we fixed, what it achieved. Audience focus: homeowners."
+      }
+    },
+    {
+      "audience": "Owner-occupiers (30–65+)",
+      "angle": "Preventative maintenance",
+      "hooks": [
+        "Fix small roof issues early so they do not turn into big damage. Best for everyday home protection.",
+        "Maintenance is cheaper than emergency call-outs and ceiling repairs. Best for everyday home protection.",
+        "A yearly roof check keeps the roof predictable. Best for everyday home protection."
+      ],
+      "ctas": [
+        "Book a preventative Roof Health Check",
+        "Request a photo-backed maintenance scope",
+        "Call 0435 900 709 and stay ahead of leaks"
+      ],
+      "content_ideas": {
+        "reel": "Quick maintenance run: gutters checked, ridge checked, valley checked, with 3 photo call-outs. Audience focus: homeowners.",
+        "carousel": "Seasonal checklist: autumn leaf load, winter leaks, summer UV, spring growth, each with a photo example. Audience focus: homeowners.",
+        "single_image": "Close-up of one early defect with a simple label: monitor vs fix now. Audience focus: homeowners."
+      }
+    },
+    {
+      "audience": "Owner-occupiers (30–65+)",
+      "angle": "Resale protection",
+      "hooks": [
+        "A clean, sound roof protects your sale price and buyer confidence. Useful for everyday home protection.",
+        "Remove roof uncertainty before the building report does. Useful for everyday home protection.",
+        "Curb appeal starts at the top and buyers notice more than you think. Useful for everyday home protection."
+      ],
+      "ctas": [
+        "Book a pre-sale Roof Health Check",
+        "Request a sale-ready photo report for buyers",
+        "Call 0435 900 709 to get the roof campaign-ready"
+      ],
+      "content_ideas": {
+        "reel": "Pre-sale transformation: inspection photos, tidy repairs, clean finish, listing-ready wide shot. Audience focus: homeowners.",
+        "carousel": "Buyer objections killer: 5 common roof flags and the photo proof that resolves them. Audience focus: homeowners.",
+        "single_image": "Listing hero shot from the street with one line: roof checked, documented, and sorted. Audience focus: homeowners."
+      }
+    },
+    {
+      "audience": "Owner-occupiers (30–65+)",
+      "angle": "Structural clarity",
+      "hooks": [
+        "Separate what is cosmetic from what is genuinely failing. Ideal for not knowing if the roof is fine or failing.",
+        "We inspect on the roof, then explain it in plain English with photos. Ideal for not knowing if the roof is fine or failing.",
+        "Clear scope logic stops guesswork and stops scope creep. Ideal for not knowing if the roof is fine or failing."
+      ],
+      "ctas": [
+        "Request a photo-backed roof condition report",
+        "Book an on-roof assessment",
+        "Call 0435 900 709 and get straight answers"
+      ],
+      "content_ideas": {
+        "reel": "Walk-through with on-screen labels: sound, ageing, failed, and why. Audience focus: homeowners.",
+        "carousel": "Annotated photos: ridge, valley, flashings, penetrations, with simple pass/fail notes. Audience focus: homeowners.",
+        "single_image": "One annotated defect photo with a short explanation and recommended next step. Audience focus: homeowners."
+      }
+    },
+    {
+      "audience": "Owner-occupiers (30–65+)",
+      "angle": "Cosmetic uplift",
+      "hooks": [
+        "A tired roof can make the whole house look older than it is. Focused on everyday home protection.",
+        "A proper restoration sharpens the whole exterior, not just the roof. Focused on everyday home protection.",
+        "Clean prep and the right coating system is what makes the finish last. Focused on everyday home protection."
+      ],
+      "ctas": [
+        "Book a Roof Restoration Assessment",
+        "Ask about 10, 15, and 20-year coating system options",
+        "Call 0435 900 709 to plan your roof transformation"
+      ],
+      "content_ideas": {
+        "reel": "Satisfying sequence: rebed, clean, repoint, paint, then wide reveal from the street. Audience focus: homeowners.",
+        "carousel": "Colour change options: 5 slides showing roof colour vs whole façade vibe, each with a real job photo. Audience focus: homeowners.",
+        "single_image": "After shot with a short caption: coating system tier used and why it suited the roof. Audience focus: homeowners."
+      }
+    },
+    {
+      "audience": "Owner-occupiers (30–65+)",
+      "angle": "Leak prevention",
+      "hooks": [
+        "Most leaks start long before you see a stain on the ceiling. Designed for not knowing if the roof is fine or failing.",
+        "Stop water entry at the roof, not with a bucket inside the house. Designed for not knowing if the roof is fine or failing.",
+        "Find the weak points and seal them properly. Designed for not knowing if the roof is fine or failing."
+      ],
+      "ctas": [
+        "Book a leak-focused Roof Health Check",
+        "Request a leak prevention scope with photos",
+        "Call 0435 900 709 before the next heavy rain"
+      ],
+      "content_ideas": {
+        "reel": "Top 3 leak points on one roof, each shown in a close-up photo, with the fix explained briefly. Audience focus: homeowners.",
+        "carousel": "Leak hotspots: valleys, flashings, ridges, penetrations, gutters, with one photo example each. Audience focus: homeowners.",
+        "single_image": "Ceiling stain photo paired with roof entry point photo and a one-line cause. Audience focus: homeowners."
+      }
+    },
+    {
+      "audience": "Owner-occupiers (30–65+)",
+      "angle": "Documentation & transparency",
+      "hooks": [
+        "No vague advice, just photos and a written scope you can keep. Helpful for everyday home protection.",
+        "We show what we see so you can make the call with confidence. Helpful for everyday home protection.",
+        "If it is not documented, it is not claimed. Helpful for everyday home protection."
+      ],
+      "ctas": [
+        "Request a written, photo-backed scope",
+        "Book a documented Roof Health Check",
+        "Call 0435 900 709 and get the proof in writing"
+      ],
+      "content_ideas": {
+        "reel": "Screen-record style: quick tour of the photo report and how the scope ties to the photos. Audience focus: homeowners.",
+        "carousel": "What you receive: photos, notes, scope options, next steps, and clear exclusions. Audience focus: homeowners.",
+        "single_image": "Report cover shot with 3 bullet outcomes: found, fixed, recommended. Audience focus: homeowners."
+      }
+    },
+    {
+      "audience": "Owner-occupiers (30–65+)",
+      "angle": "Photo-backed trust",
+      "hooks": [
+        "You do not need to climb up, we bring the roof to you in photos. Works for everyday home protection.",
+        "Before, during, after. Proof at every step. Works for everyday home protection.",
+        "Trust is earned with evidence, not talk. Works for everyday home protection."
+      ],
+      "ctas": [
+        "Get Your Free Roof Health Check with photos",
+        "Book work that comes with before and after proof",
+        "Call 0435 900 709 and get evidence-first roofing"
+      ],
+      "content_ideas": {
+        "reel": "Before and after montage with 3 labelled fixes and a final wide reveal. Audience focus: homeowners.",
+        "carousel": "Proof timeline: before, defect close-up, repair stage, prep stage, final finish. Audience focus: homeowners.",
+        "single_image": "Four-photo grid: before, during, after, and the finished wide shot. Audience focus: homeowners."
+      }
+    },
+    {
+      "audience": "Families",
+      "angle": "Peace of mind",
+      "hooks": [
+        "Get clarity on your roof before it becomes a problem. Built for family comfort and safety.",
+        "Know what is happening up there, with photos to prove it. Built for family comfort and safety.",
+        "A calm plan beats panic repairs in the middle of a storm. Built for family comfort and safety."
+      ],
+      "ctas": [
+        "Get Your Free Roof Health Check",
+        "Book Your Roof Assessment",
+        "Call 0435 900 709 to lock in a time"
+      ],
+      "content_ideas": {
+        "reel": "30-second roof check highlights, one issue explained, one fix shown, finish with photo proof. Audience focus: families.",
+        "carousel": "Problem vs cosmetic: 5 slides showing what looks bad from the street vs what matters up top. Audience focus: families.",
+        "single_image": "Before/after split with one caption line: what we found, what we fixed, what it achieved. Audience focus: families."
+      }
+    },
+    {
+      "audience": "Families",
+      "angle": "Preventative maintenance",
+      "hooks": [
+        "Fix small roof issues early so they do not turn into big damage. Best for family comfort and safety.",
+        "Maintenance is cheaper than emergency call-outs and ceiling repairs. Best for family comfort and safety.",
+        "A yearly roof check keeps the roof predictable. Best for family comfort and safety."
+      ],
+      "ctas": [
+        "Book a preventative Roof Health Check",
+        "Request a photo-backed maintenance scope",
+        "Call 0435 900 709 and stay ahead of leaks"
+      ],
+      "content_ideas": {
+        "reel": "Quick maintenance run: gutters checked, ridge checked, valley checked, with 3 photo call-outs. Audience focus: families.",
+        "carousel": "Seasonal checklist: autumn leaf load, winter leaks, summer UV, spring growth, each with a photo example. Audience focus: families.",
+        "single_image": "Close-up of one early defect with a simple label: monitor vs fix now. Audience focus: families."
+      }
+    },
+    {
+      "audience": "Families",
+      "angle": "Resale protection",
+      "hooks": [
+        "A clean, sound roof protects your sale price and buyer confidence. Useful for family comfort and safety.",
+        "Remove roof uncertainty before the building report does. Useful for family comfort and safety.",
+        "Curb appeal starts at the top and buyers notice more than you think. Useful for family comfort and safety."
+      ],
+      "ctas": [
+        "Book a pre-sale Roof Health Check",
+        "Request a sale-ready photo report for buyers",
+        "Call 0435 900 709 to get the roof campaign-ready"
+      ],
+      "content_ideas": {
+        "reel": "Pre-sale transformation: inspection photos, tidy repairs, clean finish, listing-ready wide shot. Audience focus: families.",
+        "carousel": "Buyer objections killer: 5 common roof flags and the photo proof that resolves them. Audience focus: families.",
+        "single_image": "Listing hero shot from the street with one line: roof checked, documented, and sorted. Audience focus: families."
+      }
+    },
+    {
+      "audience": "Families",
+      "angle": "Structural clarity",
+      "hooks": [
+        "Separate what is cosmetic from what is genuinely failing. Ideal for keeping the home dry and healthy for the kids.",
+        "We inspect on the roof, then explain it in plain English with photos. Ideal for keeping the home dry and healthy for the kids.",
+        "Clear scope logic stops guesswork and stops scope creep. Ideal for keeping the home dry and healthy for the kids."
+      ],
+      "ctas": [
+        "Request a photo-backed roof condition report",
+        "Book an on-roof assessment",
+        "Call 0435 900 709 and get straight answers"
+      ],
+      "content_ideas": {
+        "reel": "Walk-through with on-screen labels: sound, ageing, failed, and why. Audience focus: families.",
+        "carousel": "Annotated photos: ridge, valley, flashings, penetrations, with simple pass/fail notes. Audience focus: families.",
+        "single_image": "One annotated defect photo with a short explanation and recommended next step. Audience focus: families."
+      }
+    },
+    {
+      "audience": "Families",
+      "angle": "Cosmetic uplift",
+      "hooks": [
+        "A tired roof can make the whole house look older than it is. Focused on family comfort and safety.",
+        "A proper restoration sharpens the whole exterior, not just the roof. Focused on family comfort and safety.",
+        "Clean prep and the right coating system is what makes the finish last. Focused on family comfort and safety."
+      ],
+      "ctas": [
+        "Book a Roof Restoration Assessment",
+        "Ask about 10, 15, and 20-year coating system options",
+        "Call 0435 900 709 to plan your roof transformation"
+      ],
+      "content_ideas": {
+        "reel": "Satisfying sequence: rebed, clean, repoint, paint, then wide reveal from the street. Audience focus: families.",
+        "carousel": "Colour change options: 5 slides showing roof colour vs whole façade vibe, each with a real job photo. Audience focus: families.",
+        "single_image": "After shot with a short caption: coating system tier used and why it suited the roof. Audience focus: families."
+      }
+    },
+    {
+      "audience": "Families",
+      "angle": "Leak prevention",
+      "hooks": [
+        "Most leaks start long before you see a stain on the ceiling. Designed for keeping the home dry and healthy for the kids.",
+        "Stop water entry at the roof, not with a bucket inside the house. Designed for keeping the home dry and healthy for the kids.",
+        "Find the weak points and seal them properly. Designed for keeping the home dry and healthy for the kids."
+      ],
+      "ctas": [
+        "Book a leak-focused Roof Health Check",
+        "Request a leak prevention scope with photos",
+        "Call 0435 900 709 before the next heavy rain"
+      ],
+      "content_ideas": {
+        "reel": "Top 3 leak points on one roof, each shown in a close-up photo, with the fix explained briefly. Audience focus: families.",
+        "carousel": "Leak hotspots: valleys, flashings, ridges, penetrations, gutters, with one photo example each. Audience focus: families.",
+        "single_image": "Ceiling stain photo paired with roof entry point photo and a one-line cause. Audience focus: families."
+      }
+    },
+    {
+      "audience": "Families",
+      "angle": "Documentation & transparency",
+      "hooks": [
+        "No vague advice, just photos and a written scope you can keep. Helpful for family comfort and safety.",
+        "We show what we see so you can make the call with confidence. Helpful for family comfort and safety.",
+        "If it is not documented, it is not claimed. Helpful for family comfort and safety."
+      ],
+      "ctas": [
+        "Request a written, photo-backed scope",
+        "Book a documented Roof Health Check",
+        "Call 0435 900 709 and get the proof in writing"
+      ],
+      "content_ideas": {
+        "reel": "Screen-record style: quick tour of the photo report and how the scope ties to the photos. Audience focus: families.",
+        "carousel": "What you receive: photos, notes, scope options, next steps, and clear exclusions. Audience focus: families.",
+        "single_image": "Report cover shot with 3 bullet outcomes: found, fixed, recommended. Audience focus: families."
+      }
+    },
+    {
+      "audience": "Families",
+      "angle": "Photo-backed trust",
+      "hooks": [
+        "You do not need to climb up, we bring the roof to you in photos. Works for family comfort and safety.",
+        "Before, during, after. Proof at every step. Works for family comfort and safety.",
+        "Trust is earned with evidence, not talk. Works for family comfort and safety."
+      ],
+      "ctas": [
+        "Get Your Free Roof Health Check with photos",
+        "Book work that comes with before and after proof",
+        "Call 0435 900 709 and get evidence-first roofing"
+      ],
+      "content_ideas": {
+        "reel": "Before and after montage with 3 labelled fixes and a final wide reveal. Audience focus: families.",
+        "carousel": "Proof timeline: before, defect close-up, repair stage, prep stage, final finish. Audience focus: families.",
+        "single_image": "Four-photo grid: before, during, after, and the finished wide shot. Audience focus: families."
+      }
+    },
+    {
+      "audience": "Time-poor professionals",
+      "angle": "Peace of mind",
+      "hooks": [
+        "Get clarity on your roof before it becomes a problem. Built for low-friction, documented service.",
+        "Know what is happening up there, with photos to prove it. Built for low-friction, documented service.",
+        "A calm plan beats panic repairs in the middle of a storm. Built for low-friction, documented service."
+      ],
+      "ctas": [
+        "Get Your Free Roof Health Check",
+        "Book Your Roof Assessment",
+        "Call 0435 900 709 to lock in a time"
+      ],
+      "content_ideas": {
+        "reel": "30-second roof check highlights, one issue explained, one fix shown, finish with photo proof. Audience focus: busy professionals.",
+        "carousel": "Problem vs cosmetic: 5 slides showing what looks bad from the street vs what matters up top. Audience focus: busy professionals.",
+        "single_image": "Before/after split with one caption line: what we found, what we fixed, what it achieved. Audience focus: busy professionals."
+      }
+    },
+    {
+      "audience": "Time-poor professionals",
+      "angle": "Preventative maintenance",
+      "hooks": [
+        "Fix small roof issues early so they do not turn into big damage. Best for low-friction, documented service.",
+        "Maintenance is cheaper than emergency call-outs and ceiling repairs. Best for low-friction, documented service.",
+        "A yearly roof check keeps the roof predictable. Best for low-friction, documented service."
+      ],
+      "ctas": [
+        "Book a preventative Roof Health Check",
+        "Request a photo-backed maintenance scope",
+        "Call 0435 900 709 and stay ahead of leaks"
+      ],
+      "content_ideas": {
+        "reel": "Quick maintenance run: gutters checked, ridge checked, valley checked, with 3 photo call-outs. Audience focus: busy professionals.",
+        "carousel": "Seasonal checklist: autumn leaf load, winter leaks, summer UV, spring growth, each with a photo example. Audience focus: busy professionals.",
+        "single_image": "Close-up of one early defect with a simple label: monitor vs fix now. Audience focus: busy professionals."
+      }
+    },
+    {
+      "audience": "Time-poor professionals",
+      "angle": "Resale protection",
+      "hooks": [
+        "A clean, sound roof protects your sale price and buyer confidence. Useful for low-friction, documented service.",
+        "Remove roof uncertainty before the building report does. Useful for low-friction, documented service.",
+        "Curb appeal starts at the top and buyers notice more than you think. Useful for low-friction, documented service."
+      ],
+      "ctas": [
+        "Book a pre-sale Roof Health Check",
+        "Request a sale-ready photo report for buyers",
+        "Call 0435 900 709 to get the roof campaign-ready"
+      ],
+      "content_ideas": {
+        "reel": "Pre-sale transformation: inspection photos, tidy repairs, clean finish, listing-ready wide shot. Audience focus: busy professionals.",
+        "carousel": "Buyer objections killer: 5 common roof flags and the photo proof that resolves them. Audience focus: busy professionals.",
+        "single_image": "Listing hero shot from the street with one line: roof checked, documented, and sorted. Audience focus: busy professionals."
+      }
+    },
+    {
+      "audience": "Time-poor professionals",
+      "angle": "Structural clarity",
+      "hooks": [
+        "Separate what is cosmetic from what is genuinely failing. Ideal for no time for tradie chasing or vague answers.",
+        "We inspect on the roof, then explain it in plain English with photos. Ideal for no time for tradie chasing or vague answers.",
+        "Clear scope logic stops guesswork and stops scope creep. Ideal for no time for tradie chasing or vague answers."
+      ],
+      "ctas": [
+        "Request a photo-backed roof condition report",
+        "Book an on-roof assessment",
+        "Call 0435 900 709 and get straight answers"
+      ],
+      "content_ideas": {
+        "reel": "Walk-through with on-screen labels: sound, ageing, failed, and why. Audience focus: busy professionals.",
+        "carousel": "Annotated photos: ridge, valley, flashings, penetrations, with simple pass/fail notes. Audience focus: busy professionals.",
+        "single_image": "One annotated defect photo with a short explanation and recommended next step. Audience focus: busy professionals."
+      }
+    },
+    {
+      "audience": "Time-poor professionals",
+      "angle": "Cosmetic uplift",
+      "hooks": [
+        "A tired roof can make the whole house look older than it is. Focused on low-friction, documented service.",
+        "A proper restoration sharpens the whole exterior, not just the roof. Focused on low-friction, documented service.",
+        "Clean prep and the right coating system is what makes the finish last. Focused on low-friction, documented service."
+      ],
+      "ctas": [
+        "Book a Roof Restoration Assessment",
+        "Ask about 10, 15, and 20-year coating system options",
+        "Call 0435 900 709 to plan your roof transformation"
+      ],
+      "content_ideas": {
+        "reel": "Satisfying sequence: rebed, clean, repoint, paint, then wide reveal from the street. Audience focus: busy professionals.",
+        "carousel": "Colour change options: 5 slides showing roof colour vs whole façade vibe, each with a real job photo. Audience focus: busy professionals.",
+        "single_image": "After shot with a short caption: coating system tier used and why it suited the roof. Audience focus: busy professionals."
+      }
+    },
+    {
+      "audience": "Time-poor professionals",
+      "angle": "Leak prevention",
+      "hooks": [
+        "Most leaks start long before you see a stain on the ceiling. Designed for no time for tradie chasing or vague answers.",
+        "Stop water entry at the roof, not with a bucket inside the house. Designed for no time for tradie chasing or vague answers.",
+        "Find the weak points and seal them properly. Designed for no time for tradie chasing or vague answers."
+      ],
+      "ctas": [
+        "Book a leak-focused Roof Health Check",
+        "Request a leak prevention scope with photos",
+        "Call 0435 900 709 before the next heavy rain"
+      ],
+      "content_ideas": {
+        "reel": "Top 3 leak points on one roof, each shown in a close-up photo, with the fix explained briefly. Audience focus: busy professionals.",
+        "carousel": "Leak hotspots: valleys, flashings, ridges, penetrations, gutters, with one photo example each. Audience focus: busy professionals.",
+        "single_image": "Ceiling stain photo paired with roof entry point photo and a one-line cause. Audience focus: busy professionals."
+      }
+    },
+    {
+      "audience": "Time-poor professionals",
+      "angle": "Documentation & transparency",
+      "hooks": [
+        "No vague advice, just photos and a written scope you can keep. Helpful for low-friction, documented service.",
+        "We show what we see so you can make the call with confidence. Helpful for low-friction, documented service.",
+        "If it is not documented, it is not claimed. Helpful for low-friction, documented service."
+      ],
+      "ctas": [
+        "Request a written, photo-backed scope",
+        "Book a documented Roof Health Check",
+        "Call 0435 900 709 and get the proof in writing"
+      ],
+      "content_ideas": {
+        "reel": "Screen-record style: quick tour of the photo report and how the scope ties to the photos. Audience focus: busy professionals.",
+        "carousel": "What you receive: photos, notes, scope options, next steps, and clear exclusions. Audience focus: busy professionals.",
+        "single_image": "Report cover shot with 3 bullet outcomes: found, fixed, recommended. Audience focus: busy professionals."
+      }
+    },
+    {
+      "audience": "Time-poor professionals",
+      "angle": "Photo-backed trust",
+      "hooks": [
+        "You do not need to climb up, we bring the roof to you in photos. Works for low-friction, documented service.",
+        "Before, during, after. Proof at every step. Works for low-friction, documented service.",
+        "Trust is earned with evidence, not talk. Works for low-friction, documented service."
+      ],
+      "ctas": [
+        "Get Your Free Roof Health Check with photos",
+        "Book work that comes with before and after proof",
+        "Call 0435 900 709 and get evidence-first roofing"
+      ],
+      "content_ideas": {
+        "reel": "Before and after montage with 3 labelled fixes and a final wide reveal. Audience focus: busy professionals.",
+        "carousel": "Proof timeline: before, defect close-up, repair stage, prep stage, final finish. Audience focus: busy professionals.",
+        "single_image": "Four-photo grid: before, during, after, and the finished wide shot. Audience focus: busy professionals."
+      }
+    },
+    {
+      "audience": "Property managers",
+      "angle": "Peace of mind",
+      "hooks": [
+        "Get clarity on your roof before it becomes a problem. Built for documentation that can be forwarded.",
+        "Know what is happening up there, with photos to prove it. Built for documentation that can be forwarded.",
+        "A calm plan beats panic repairs in the middle of a storm. Built for documentation that can be forwarded."
+      ],
+      "ctas": [
+        "Get Your Free Roof Health Check",
+        "Book Your Roof Assessment",
+        "Call 0435 900 709 to lock in a time"
+      ],
+      "content_ideas": {
+        "reel": "30-second roof check highlights, one issue explained, one fix shown, finish with photo proof. Audience focus: property managers.",
+        "carousel": "Problem vs cosmetic: 5 slides showing what looks bad from the street vs what matters up top. Audience focus: property managers.",
+        "single_image": "Before/after split with one caption line: what we found, what we fixed, what it achieved. Audience focus: property managers."
+      }
+    },
+    {
+      "audience": "Property managers",
+      "angle": "Preventative maintenance",
+      "hooks": [
+        "Fix small roof issues early so they do not turn into big damage. Best for documentation that can be forwarded.",
+        "Maintenance is cheaper than emergency call-outs and ceiling repairs. Best for documentation that can be forwarded.",
+        "A yearly roof check keeps the roof predictable. Best for documentation that can be forwarded."
+      ],
+      "ctas": [
+        "Book a preventative Roof Health Check",
+        "Request a photo-backed maintenance scope",
+        "Call 0435 900 709 and stay ahead of leaks"
+      ],
+      "content_ideas": {
+        "reel": "Quick maintenance run: gutters checked, ridge checked, valley checked, with 3 photo call-outs. Audience focus: property managers.",
+        "carousel": "Seasonal checklist: autumn leaf load, winter leaks, summer UV, spring growth, each with a photo example. Audience focus: property managers.",
+        "single_image": "Close-up of one early defect with a simple label: monitor vs fix now. Audience focus: property managers."
+      }
+    },
+    {
+      "audience": "Property managers",
+      "angle": "Resale protection",
+      "hooks": [
+        "A clean, sound roof protects your sale price and buyer confidence. Useful for documentation that can be forwarded.",
+        "Remove roof uncertainty before the building report does. Useful for documentation that can be forwarded.",
+        "Curb appeal starts at the top and buyers notice more than you think. Useful for documentation that can be forwarded."
+      ],
+      "ctas": [
+        "Book a pre-sale Roof Health Check",
+        "Request a sale-ready photo report for buyers",
+        "Call 0435 900 709 to get the roof campaign-ready"
+      ],
+      "content_ideas": {
+        "reel": "Pre-sale transformation: inspection photos, tidy repairs, clean finish, listing-ready wide shot. Audience focus: property managers.",
+        "carousel": "Buyer objections killer: 5 common roof flags and the photo proof that resolves them. Audience focus: property managers.",
+        "single_image": "Listing hero shot from the street with one line: roof checked, documented, and sorted. Audience focus: property managers."
+      }
+    },
+    {
+      "audience": "Property managers",
+      "angle": "Structural clarity",
+      "hooks": [
+        "Separate what is cosmetic from what is genuinely failing. Ideal for reducing tenant escalations and owner disputes.",
+        "We inspect on the roof, then explain it in plain English with photos. Ideal for reducing tenant escalations and owner disputes.",
+        "Clear scope logic stops guesswork and stops scope creep. Ideal for reducing tenant escalations and owner disputes."
+      ],
+      "ctas": [
+        "Request a photo-backed roof condition report",
+        "Book an on-roof assessment",
+        "Call 0435 900 709 and get straight answers"
+      ],
+      "content_ideas": {
+        "reel": "Walk-through with on-screen labels: sound, ageing, failed, and why. Audience focus: property managers.",
+        "carousel": "Annotated photos: ridge, valley, flashings, penetrations, with simple pass/fail notes. Audience focus: property managers.",
+        "single_image": "One annotated defect photo with a short explanation and recommended next step. Audience focus: property managers."
+      }
+    },
+    {
+      "audience": "Property managers",
+      "angle": "Cosmetic uplift",
+      "hooks": [
+        "A tired roof can make the whole house look older than it is. Focused on documentation that can be forwarded.",
+        "A proper restoration sharpens the whole exterior, not just the roof. Focused on documentation that can be forwarded.",
+        "Clean prep and the right coating system is what makes the finish last. Focused on documentation that can be forwarded."
+      ],
+      "ctas": [
+        "Book a Roof Restoration Assessment",
+        "Ask about 10, 15, and 20-year coating system options",
+        "Call 0435 900 709 to plan your roof transformation"
+      ],
+      "content_ideas": {
+        "reel": "Satisfying sequence: rebed, clean, repoint, paint, then wide reveal from the street. Audience focus: property managers.",
+        "carousel": "Colour change options: 5 slides showing roof colour vs whole façade vibe, each with a real job photo. Audience focus: property managers.",
+        "single_image": "After shot with a short caption: coating system tier used and why it suited the roof. Audience focus: property managers."
+      }
+    },
+    {
+      "audience": "Property managers",
+      "angle": "Leak prevention",
+      "hooks": [
+        "Most leaks start long before you see a stain on the ceiling. Designed for reducing tenant escalations and owner disputes.",
+        "Stop water entry at the roof, not with a bucket inside the house. Designed for reducing tenant escalations and owner disputes.",
+        "Find the weak points and seal them properly. Designed for reducing tenant escalations and owner disputes."
+      ],
+      "ctas": [
+        "Book a leak-focused Roof Health Check",
+        "Request a leak prevention scope with photos",
+        "Call 0435 900 709 before the next heavy rain"
+      ],
+      "content_ideas": {
+        "reel": "Top 3 leak points on one roof, each shown in a close-up photo, with the fix explained briefly. Audience focus: property managers.",
+        "carousel": "Leak hotspots: valleys, flashings, ridges, penetrations, gutters, with one photo example each. Audience focus: property managers.",
+        "single_image": "Ceiling stain photo paired with roof entry point photo and a one-line cause. Audience focus: property managers."
+      }
+    },
+    {
+      "audience": "Property managers",
+      "angle": "Documentation & transparency",
+      "hooks": [
+        "No vague advice, just photos and a written scope you can keep. Helpful for documentation that can be forwarded.",
+        "We show what we see so you can make the call with confidence. Helpful for documentation that can be forwarded.",
+        "If it is not documented, it is not claimed. Helpful for documentation that can be forwarded."
+      ],
+      "ctas": [
+        "Request a written, photo-backed scope",
+        "Book a documented Roof Health Check",
+        "Call 0435 900 709 and get the proof in writing"
+      ],
+      "content_ideas": {
+        "reel": "Screen-record style: quick tour of the photo report and how the scope ties to the photos. Audience focus: property managers.",
+        "carousel": "What you receive: photos, notes, scope options, next steps, and clear exclusions. Audience focus: property managers.",
+        "single_image": "Report cover shot with 3 bullet outcomes: found, fixed, recommended. Audience focus: property managers."
+      }
+    },
+    {
+      "audience": "Property managers",
+      "angle": "Photo-backed trust",
+      "hooks": [
+        "You do not need to climb up, we bring the roof to you in photos. Works for documentation that can be forwarded.",
+        "Before, during, after. Proof at every step. Works for documentation that can be forwarded.",
+        "Trust is earned with evidence, not talk. Works for documentation that can be forwarded."
+      ],
+      "ctas": [
+        "Get Your Free Roof Health Check with photos",
+        "Book work that comes with before and after proof",
+        "Call 0435 900 709 and get evidence-first roofing"
+      ],
+      "content_ideas": {
+        "reel": "Before and after montage with 3 labelled fixes and a final wide reveal. Audience focus: property managers.",
+        "carousel": "Proof timeline: before, defect close-up, repair stage, prep stage, final finish. Audience focus: property managers.",
+        "single_image": "Four-photo grid: before, during, after, and the finished wide shot. Audience focus: property managers."
+      }
+    },
+    {
+      "audience": "Real estate agents",
+      "angle": "Peace of mind",
+      "hooks": [
+        "Get clarity on your roof before it becomes a problem. Built for sale-ready documentation.",
+        "Know what is happening up there, with photos to prove it. Built for sale-ready documentation.",
+        "A calm plan beats panic repairs in the middle of a storm. Built for sale-ready documentation."
+      ],
+      "ctas": [
+        "Get Your Free Roof Health Check",
+        "Book Your Roof Assessment",
+        "Call 0435 900 709 to lock in a time"
+      ],
+      "content_ideas": {
+        "reel": "30-second roof check highlights, one issue explained, one fix shown, finish with photo proof. Audience focus: agents.",
+        "carousel": "Problem vs cosmetic: 5 slides showing what looks bad from the street vs what matters up top. Audience focus: agents.",
+        "single_image": "Before/after split with one caption line: what we found, what we fixed, what it achieved. Audience focus: agents."
+      }
+    },
+    {
+      "audience": "Real estate agents",
+      "angle": "Preventative maintenance",
+      "hooks": [
+        "Fix small roof issues early so they do not turn into big damage. Best for sale-ready documentation.",
+        "Maintenance is cheaper than emergency call-outs and ceiling repairs. Best for sale-ready documentation.",
+        "A yearly roof check keeps the roof predictable. Best for sale-ready documentation."
+      ],
+      "ctas": [
+        "Book a preventative Roof Health Check",
+        "Request a photo-backed maintenance scope",
+        "Call 0435 900 709 and stay ahead of leaks"
+      ],
+      "content_ideas": {
+        "reel": "Quick maintenance run: gutters checked, ridge checked, valley checked, with 3 photo call-outs. Audience focus: agents.",
+        "carousel": "Seasonal checklist: autumn leaf load, winter leaks, summer UV, spring growth, each with a photo example. Audience focus: agents.",
+        "single_image": "Close-up of one early defect with a simple label: monitor vs fix now. Audience focus: agents."
+      }
+    },
+    {
+      "audience": "Real estate agents",
+      "angle": "Resale protection",
+      "hooks": [
+        "A clean, sound roof protects your sale price and buyer confidence. Useful for sale-ready documentation.",
+        "Remove roof uncertainty before the building report does. Useful for sale-ready documentation.",
+        "Curb appeal starts at the top and buyers notice more than you think. Useful for sale-ready documentation."
+      ],
+      "ctas": [
+        "Book a pre-sale Roof Health Check",
+        "Request a sale-ready photo report for buyers",
+        "Call 0435 900 709 to get the roof campaign-ready"
+      ],
+      "content_ideas": {
+        "reel": "Pre-sale transformation: inspection photos, tidy repairs, clean finish, listing-ready wide shot. Audience focus: agents.",
+        "carousel": "Buyer objections killer: 5 common roof flags and the photo proof that resolves them. Audience focus: agents.",
+        "single_image": "Listing hero shot from the street with one line: roof checked, documented, and sorted. Audience focus: agents."
+      }
+    },
+    {
+      "audience": "Real estate agents",
+      "angle": "Structural clarity",
+      "hooks": [
+        "Separate what is cosmetic from what is genuinely failing. Ideal for avoiding roof issues becoming negotiation leverage.",
+        "We inspect on the roof, then explain it in plain English with photos. Ideal for avoiding roof issues becoming negotiation leverage.",
+        "Clear scope logic stops guesswork and stops scope creep. Ideal for avoiding roof issues becoming negotiation leverage."
+      ],
+      "ctas": [
+        "Request a photo-backed roof condition report",
+        "Book an on-roof assessment",
+        "Call 0435 900 709 and get straight answers"
+      ],
+      "content_ideas": {
+        "reel": "Walk-through with on-screen labels: sound, ageing, failed, and why. Audience focus: agents.",
+        "carousel": "Annotated photos: ridge, valley, flashings, penetrations, with simple pass/fail notes. Audience focus: agents.",
+        "single_image": "One annotated defect photo with a short explanation and recommended next step. Audience focus: agents."
+      }
+    },
+    {
+      "audience": "Real estate agents",
+      "angle": "Cosmetic uplift",
+      "hooks": [
+        "A tired roof can make the whole house look older than it is. Focused on sale-ready documentation.",
+        "A proper restoration sharpens the whole exterior, not just the roof. Focused on sale-ready documentation.",
+        "Clean prep and the right coating system is what makes the finish last. Focused on sale-ready documentation."
+      ],
+      "ctas": [
+        "Book a Roof Restoration Assessment",
+        "Ask about 10, 15, and 20-year coating system options",
+        "Call 0435 900 709 to plan your roof transformation"
+      ],
+      "content_ideas": {
+        "reel": "Satisfying sequence: rebed, clean, repoint, paint, then wide reveal from the street. Audience focus: agents.",
+        "carousel": "Colour change options: 5 slides showing roof colour vs whole façade vibe, each with a real job photo. Audience focus: agents.",
+        "single_image": "After shot with a short caption: coating system tier used and why it suited the roof. Audience focus: agents."
+      }
+    },
+    {
+      "audience": "Real estate agents",
+      "angle": "Leak prevention",
+      "hooks": [
+        "Most leaks start long before you see a stain on the ceiling. Designed for avoiding roof issues becoming negotiation leverage.",
+        "Stop water entry at the roof, not with a bucket inside the house. Designed for avoiding roof issues becoming negotiation leverage.",
+        "Find the weak points and seal them properly. Designed for avoiding roof issues becoming negotiation leverage."
+      ],
+      "ctas": [
+        "Book a leak-focused Roof Health Check",
+        "Request a leak prevention scope with photos",
+        "Call 0435 900 709 before the next heavy rain"
+      ],
+      "content_ideas": {
+        "reel": "Top 3 leak points on one roof, each shown in a close-up photo, with the fix explained briefly. Audience focus: agents.",
+        "carousel": "Leak hotspots: valleys, flashings, ridges, penetrations, gutters, with one photo example each. Audience focus: agents.",
+        "single_image": "Ceiling stain photo paired with roof entry point photo and a one-line cause. Audience focus: agents."
+      }
+    },
+    {
+      "audience": "Real estate agents",
+      "angle": "Documentation & transparency",
+      "hooks": [
+        "No vague advice, just photos and a written scope you can keep. Helpful for sale-ready documentation.",
+        "We show what we see so you can make the call with confidence. Helpful for sale-ready documentation.",
+        "If it is not documented, it is not claimed. Helpful for sale-ready documentation."
+      ],
+      "ctas": [
+        "Request a written, photo-backed scope",
+        "Book a documented Roof Health Check",
+        "Call 0435 900 709 and get the proof in writing"
+      ],
+      "content_ideas": {
+        "reel": "Screen-record style: quick tour of the photo report and how the scope ties to the photos. Audience focus: agents.",
+        "carousel": "What you receive: photos, notes, scope options, next steps, and clear exclusions. Audience focus: agents.",
+        "single_image": "Report cover shot with 3 bullet outcomes: found, fixed, recommended. Audience focus: agents."
+      }
+    },
+    {
+      "audience": "Real estate agents",
+      "angle": "Photo-backed trust",
+      "hooks": [
+        "You do not need to climb up, we bring the roof to you in photos. Works for sale-ready documentation.",
+        "Before, during, after. Proof at every step. Works for sale-ready documentation.",
+        "Trust is earned with evidence, not talk. Works for sale-ready documentation."
+      ],
+      "ctas": [
+        "Get Your Free Roof Health Check with photos",
+        "Book work that comes with before and after proof",
+        "Call 0435 900 709 and get evidence-first roofing"
+      ],
+      "content_ideas": {
+        "reel": "Before and after montage with 3 labelled fixes and a final wide reveal. Audience focus: agents.",
+        "carousel": "Proof timeline: before, defect close-up, repair stage, prep stage, final finish. Audience focus: agents.",
+        "single_image": "Four-photo grid: before, during, after, and the finished wide shot. Audience focus: agents."
+      }
+    },
+    {
+      "audience": "Developers",
+      "angle": "Peace of mind",
+      "hooks": [
+        "Get clarity on your roof before it becomes a problem. Built for build quality and clean closeout.",
+        "Know what is happening up there, with photos to prove it. Built for build quality and clean closeout.",
+        "A calm plan beats panic repairs in the middle of a storm. Built for build quality and clean closeout."
+      ],
+      "ctas": [
+        "Get Your Free Roof Health Check",
+        "Book Your Roof Assessment",
+        "Call 0435 900 709 to lock in a time"
+      ],
+      "content_ideas": {
+        "reel": "30-second roof check highlights, one issue explained, one fix shown, finish with photo proof. Audience focus: developers.",
+        "carousel": "Problem vs cosmetic: 5 slides showing what looks bad from the street vs what matters up top. Audience focus: developers.",
+        "single_image": "Before/after split with one caption line: what we found, what we fixed, what it achieved. Audience focus: developers."
+      }
+    },
+    {
+      "audience": "Developers",
+      "angle": "Preventative maintenance",
+      "hooks": [
+        "Fix small roof issues early so they do not turn into big damage. Best for build quality and clean closeout.",
+        "Maintenance is cheaper than emergency call-outs and ceiling repairs. Best for build quality and clean closeout.",
+        "A yearly roof check keeps the roof predictable. Best for build quality and clean closeout."
+      ],
+      "ctas": [
+        "Book a preventative Roof Health Check",
+        "Request a photo-backed maintenance scope",
+        "Call 0435 900 709 and stay ahead of leaks"
+      ],
+      "content_ideas": {
+        "reel": "Quick maintenance run: gutters checked, ridge checked, valley checked, with 3 photo call-outs. Audience focus: developers.",
+        "carousel": "Seasonal checklist: autumn leaf load, winter leaks, summer UV, spring growth, each with a photo example. Audience focus: developers.",
+        "single_image": "Close-up of one early defect with a simple label: monitor vs fix now. Audience focus: developers."
+      }
+    },
+    {
+      "audience": "Developers",
+      "angle": "Resale protection",
+      "hooks": [
+        "A clean, sound roof protects your sale price and buyer confidence. Useful for build quality and clean closeout.",
+        "Remove roof uncertainty before the building report does. Useful for build quality and clean closeout.",
+        "Curb appeal starts at the top and buyers notice more than you think. Useful for build quality and clean closeout."
+      ],
+      "ctas": [
+        "Book a pre-sale Roof Health Check",
+        "Request a sale-ready photo report for buyers",
+        "Call 0435 900 709 to get the roof campaign-ready"
+      ],
+      "content_ideas": {
+        "reel": "Pre-sale transformation: inspection photos, tidy repairs, clean finish, listing-ready wide shot. Audience focus: developers.",
+        "carousel": "Buyer objections killer: 5 common roof flags and the photo proof that resolves them. Audience focus: developers.",
+        "single_image": "Listing hero shot from the street with one line: roof checked, documented, and sorted. Audience focus: developers."
+      }
+    },
+    {
+      "audience": "Developers",
+      "angle": "Structural clarity",
+      "hooks": [
+        "Separate what is cosmetic from what is genuinely failing. Ideal for avoiding call-backs and handover defects.",
+        "We inspect on the roof, then explain it in plain English with photos. Ideal for avoiding call-backs and handover defects.",
+        "Clear scope logic stops guesswork and stops scope creep. Ideal for avoiding call-backs and handover defects."
+      ],
+      "ctas": [
+        "Request a photo-backed roof condition report",
+        "Book an on-roof assessment",
+        "Call 0435 900 709 and get straight answers"
+      ],
+      "content_ideas": {
+        "reel": "Walk-through with on-screen labels: sound, ageing, failed, and why. Audience focus: developers.",
+        "carousel": "Annotated photos: ridge, valley, flashings, penetrations, with simple pass/fail notes. Audience focus: developers.",
+        "single_image": "One annotated defect photo with a short explanation and recommended next step. Audience focus: developers."
+      }
+    },
+    {
+      "audience": "Developers",
+      "angle": "Cosmetic uplift",
+      "hooks": [
+        "A tired roof can make the whole house look older than it is. Focused on build quality and clean closeout.",
+        "A proper restoration sharpens the whole exterior, not just the roof. Focused on build quality and clean closeout.",
+        "Clean prep and the right coating system is what makes the finish last. Focused on build quality and clean closeout."
+      ],
+      "ctas": [
+        "Book a Roof Restoration Assessment",
+        "Ask about 10, 15, and 20-year coating system options",
+        "Call 0435 900 709 to plan your roof transformation"
+      ],
+      "content_ideas": {
+        "reel": "Satisfying sequence: rebed, clean, repoint, paint, then wide reveal from the street. Audience focus: developers.",
+        "carousel": "Colour change options: 5 slides showing roof colour vs whole façade vibe, each with a real job photo. Audience focus: developers.",
+        "single_image": "After shot with a short caption: coating system tier used and why it suited the roof. Audience focus: developers."
+      }
+    },
+    {
+      "audience": "Developers",
+      "angle": "Leak prevention",
+      "hooks": [
+        "Most leaks start long before you see a stain on the ceiling. Designed for avoiding call-backs and handover defects.",
+        "Stop water entry at the roof, not with a bucket inside the house. Designed for avoiding call-backs and handover defects.",
+        "Find the weak points and seal them properly. Designed for avoiding call-backs and handover defects."
+      ],
+      "ctas": [
+        "Book a leak-focused Roof Health Check",
+        "Request a leak prevention scope with photos",
+        "Call 0435 900 709 before the next heavy rain"
+      ],
+      "content_ideas": {
+        "reel": "Top 3 leak points on one roof, each shown in a close-up photo, with the fix explained briefly. Audience focus: developers.",
+        "carousel": "Leak hotspots: valleys, flashings, ridges, penetrations, gutters, with one photo example each. Audience focus: developers.",
+        "single_image": "Ceiling stain photo paired with roof entry point photo and a one-line cause. Audience focus: developers."
+      }
+    },
+    {
+      "audience": "Developers",
+      "angle": "Documentation & transparency",
+      "hooks": [
+        "No vague advice, just photos and a written scope you can keep. Helpful for build quality and clean closeout.",
+        "We show what we see so you can make the call with confidence. Helpful for build quality and clean closeout.",
+        "If it is not documented, it is not claimed. Helpful for build quality and clean closeout."
+      ],
+      "ctas": [
+        "Request a written, photo-backed scope",
+        "Book a documented Roof Health Check",
+        "Call 0435 900 709 and get the proof in writing"
+      ],
+      "content_ideas": {
+        "reel": "Screen-record style: quick tour of the photo report and how the scope ties to the photos. Audience focus: developers.",
+        "carousel": "What you receive: photos, notes, scope options, next steps, and clear exclusions. Audience focus: developers.",
+        "single_image": "Report cover shot with 3 bullet outcomes: found, fixed, recommended. Audience focus: developers."
+      }
+    },
+    {
+      "audience": "Developers",
+      "angle": "Photo-backed trust",
+      "hooks": [
+        "You do not need to climb up, we bring the roof to you in photos. Works for build quality and clean closeout.",
+        "Before, during, after. Proof at every step. Works for build quality and clean closeout.",
+        "Trust is earned with evidence, not talk. Works for build quality and clean closeout."
+      ],
+      "ctas": [
+        "Get Your Free Roof Health Check with photos",
+        "Book work that comes with before and after proof",
+        "Call 0435 900 709 and get evidence-first roofing"
+      ],
+      "content_ideas": {
+        "reel": "Before and after montage with 3 labelled fixes and a final wide reveal. Audience focus: developers.",
+        "carousel": "Proof timeline: before, defect close-up, repair stage, prep stage, final finish. Audience focus: developers.",
+        "single_image": "Four-photo grid: before, during, after, and the finished wide shot. Audience focus: developers."
+      }
+    },
+    {
+      "audience": "Pre-sale vendors",
+      "angle": "Peace of mind",
+      "hooks": [
+        "Get clarity on your roof before it becomes a problem. Built for sale prep and curb appeal.",
+        "Know what is happening up there, with photos to prove it. Built for sale prep and curb appeal.",
+        "A calm plan beats panic repairs in the middle of a storm. Built for sale prep and curb appeal."
+      ],
+      "ctas": [
+        "Get Your Free Roof Health Check",
+        "Book Your Roof Assessment",
+        "Call 0435 900 709 to lock in a time"
+      ],
+      "content_ideas": {
+        "reel": "30-second roof check highlights, one issue explained, one fix shown, finish with photo proof. Audience focus: vendors.",
+        "carousel": "Problem vs cosmetic: 5 slides showing what looks bad from the street vs what matters up top. Audience focus: vendors.",
+        "single_image": "Before/after split with one caption line: what we found, what we fixed, what it achieved. Audience focus: vendors."
+      }
+    },
+    {
+      "audience": "Pre-sale vendors",
+      "angle": "Preventative maintenance",
+      "hooks": [
+        "Fix small roof issues early so they do not turn into big damage. Best for sale prep and curb appeal.",
+        "Maintenance is cheaper than emergency call-outs and ceiling repairs. Best for sale prep and curb appeal.",
+        "A yearly roof check keeps the roof predictable. Best for sale prep and curb appeal."
+      ],
+      "ctas": [
+        "Book a preventative Roof Health Check",
+        "Request a photo-backed maintenance scope",
+        "Call 0435 900 709 and stay ahead of leaks"
+      ],
+      "content_ideas": {
+        "reel": "Quick maintenance run: gutters checked, ridge checked, valley checked, with 3 photo call-outs. Audience focus: vendors.",
+        "carousel": "Seasonal checklist: autumn leaf load, winter leaks, summer UV, spring growth, each with a photo example. Audience focus: vendors.",
+        "single_image": "Close-up of one early defect with a simple label: monitor vs fix now. Audience focus: vendors."
+      }
+    },
+    {
+      "audience": "Pre-sale vendors",
+      "angle": "Resale protection",
+      "hooks": [
+        "A clean, sound roof protects your sale price and buyer confidence. Useful for sale prep and curb appeal.",
+        "Remove roof uncertainty before the building report does. Useful for sale prep and curb appeal.",
+        "Curb appeal starts at the top and buyers notice more than you think. Useful for sale prep and curb appeal."
+      ],
+      "ctas": [
+        "Book a pre-sale Roof Health Check",
+        "Request a sale-ready photo report for buyers",
+        "Call 0435 900 709 to get the roof campaign-ready"
+      ],
+      "content_ideas": {
+        "reel": "Pre-sale transformation: inspection photos, tidy repairs, clean finish, listing-ready wide shot. Audience focus: vendors.",
+        "carousel": "Buyer objections killer: 5 common roof flags and the photo proof that resolves them. Audience focus: vendors.",
+        "single_image": "Listing hero shot from the street with one line: roof checked, documented, and sorted. Audience focus: vendors."
+      }
+    },
+    {
+      "audience": "Pre-sale vendors",
+      "angle": "Structural clarity",
+      "hooks": [
+        "Separate what is cosmetic from what is genuinely failing. Ideal for keeping the campaign clean with no surprises.",
+        "We inspect on the roof, then explain it in plain English with photos. Ideal for keeping the campaign clean with no surprises.",
+        "Clear scope logic stops guesswork and stops scope creep. Ideal for keeping the campaign clean with no surprises."
+      ],
+      "ctas": [
+        "Request a photo-backed roof condition report",
+        "Book an on-roof assessment",
+        "Call 0435 900 709 and get straight answers"
+      ],
+      "content_ideas": {
+        "reel": "Walk-through with on-screen labels: sound, ageing, failed, and why. Audience focus: vendors.",
+        "carousel": "Annotated photos: ridge, valley, flashings, penetrations, with simple pass/fail notes. Audience focus: vendors.",
+        "single_image": "One annotated defect photo with a short explanation and recommended next step. Audience focus: vendors."
+      }
+    },
+    {
+      "audience": "Pre-sale vendors",
+      "angle": "Cosmetic uplift",
+      "hooks": [
+        "A tired roof can make the whole house look older than it is. Focused on sale prep and curb appeal.",
+        "A proper restoration sharpens the whole exterior, not just the roof. Focused on sale prep and curb appeal.",
+        "Clean prep and the right coating system is what makes the finish last. Focused on sale prep and curb appeal."
+      ],
+      "ctas": [
+        "Book a Roof Restoration Assessment",
+        "Ask about 10, 15, and 20-year coating system options",
+        "Call 0435 900 709 to plan your roof transformation"
+      ],
+      "content_ideas": {
+        "reel": "Satisfying sequence: rebed, clean, repoint, paint, then wide reveal from the street. Audience focus: vendors.",
+        "carousel": "Colour change options: 5 slides showing roof colour vs whole façade vibe, each with a real job photo. Audience focus: vendors.",
+        "single_image": "After shot with a short caption: coating system tier used and why it suited the roof. Audience focus: vendors."
+      }
+    },
+    {
+      "audience": "Pre-sale vendors",
+      "angle": "Leak prevention",
+      "hooks": [
+        "Most leaks start long before you see a stain on the ceiling. Designed for keeping the campaign clean with no surprises.",
+        "Stop water entry at the roof, not with a bucket inside the house. Designed for keeping the campaign clean with no surprises.",
+        "Find the weak points and seal them properly. Designed for keeping the campaign clean with no surprises."
+      ],
+      "ctas": [
+        "Book a leak-focused Roof Health Check",
+        "Request a leak prevention scope with photos",
+        "Call 0435 900 709 before the next heavy rain"
+      ],
+      "content_ideas": {
+        "reel": "Top 3 leak points on one roof, each shown in a close-up photo, with the fix explained briefly. Audience focus: vendors.",
+        "carousel": "Leak hotspots: valleys, flashings, ridges, penetrations, gutters, with one photo example each. Audience focus: vendors.",
+        "single_image": "Ceiling stain photo paired with roof entry point photo and a one-line cause. Audience focus: vendors."
+      }
+    },
+    {
+      "audience": "Pre-sale vendors",
+      "angle": "Documentation & transparency",
+      "hooks": [
+        "No vague advice, just photos and a written scope you can keep. Helpful for sale prep and curb appeal.",
+        "We show what we see so you can make the call with confidence. Helpful for sale prep and curb appeal.",
+        "If it is not documented, it is not claimed. Helpful for sale prep and curb appeal."
+      ],
+      "ctas": [
+        "Request a written, photo-backed scope",
+        "Book a documented Roof Health Check",
+        "Call 0435 900 709 and get the proof in writing"
+      ],
+      "content_ideas": {
+        "reel": "Screen-record style: quick tour of the photo report and how the scope ties to the photos. Audience focus: vendors.",
+        "carousel": "What you receive: photos, notes, scope options, next steps, and clear exclusions. Audience focus: vendors.",
+        "single_image": "Report cover shot with 3 bullet outcomes: found, fixed, recommended. Audience focus: vendors."
+      }
+    },
+    {
+      "audience": "Pre-sale vendors",
+      "angle": "Photo-backed trust",
+      "hooks": [
+        "You do not need to climb up, we bring the roof to you in photos. Works for sale prep and curb appeal.",
+        "Before, during, after. Proof at every step. Works for sale prep and curb appeal.",
+        "Trust is earned with evidence, not talk. Works for sale prep and curb appeal."
+      ],
+      "ctas": [
+        "Get Your Free Roof Health Check with photos",
+        "Book work that comes with before and after proof",
+        "Call 0435 900 709 and get evidence-first roofing"
+      ],
+      "content_ideas": {
+        "reel": "Before and after montage with 3 labelled fixes and a final wide reveal. Audience focus: vendors.",
+        "carousel": "Proof timeline: before, defect close-up, repair stage, prep stage, final finish. Audience focus: vendors.",
+        "single_image": "Four-photo grid: before, during, after, and the finished wide shot. Audience focus: vendors."
+      }
+    },
+    {
+      "audience": "Post-storm callers",
+      "angle": "Peace of mind",
+      "hooks": [
+        "Get clarity on your roof before it becomes a problem. Built for urgent clarity with proof.",
+        "Know what is happening up there, with photos to prove it. Built for urgent clarity with proof.",
+        "A calm plan beats panic repairs in the middle of a storm. Built for urgent clarity with proof."
+      ],
+      "ctas": [
+        "Get Your Free Roof Health Check",
+        "Book Your Roof Assessment",
+        "Call 0435 900 709 to lock in a time"
+      ],
+      "content_ideas": {
+        "reel": "30-second roof check highlights, one issue explained, one fix shown, finish with photo proof. Audience focus: post-storm homeowners.",
+        "carousel": "Problem vs cosmetic: 5 slides showing what looks bad from the street vs what matters up top. Audience focus: post-storm homeowners.",
+        "single_image": "Before/after split with one caption line: what we found, what we fixed, what it achieved. Audience focus: post-storm homeowners."
+      }
+    },
+    {
+      "audience": "Post-storm callers",
+      "angle": "Preventative maintenance",
+      "hooks": [
+        "Fix small roof issues early so they do not turn into big damage. Best for urgent clarity with proof.",
+        "Maintenance is cheaper than emergency call-outs and ceiling repairs. Best for urgent clarity with proof.",
+        "A yearly roof check keeps the roof predictable. Best for urgent clarity with proof."
+      ],
+      "ctas": [
+        "Book a preventative Roof Health Check",
+        "Request a photo-backed maintenance scope",
+        "Call 0435 900 709 and stay ahead of leaks"
+      ],
+      "content_ideas": {
+        "reel": "Quick maintenance run: gutters checked, ridge checked, valley checked, with 3 photo call-outs. Audience focus: post-storm homeowners.",
+        "carousel": "Seasonal checklist: autumn leaf load, winter leaks, summer UV, spring growth, each with a photo example. Audience focus: post-storm homeowners.",
+        "single_image": "Close-up of one early defect with a simple label: monitor vs fix now. Audience focus: post-storm homeowners."
+      }
+    },
+    {
+      "audience": "Post-storm callers",
+      "angle": "Resale protection",
+      "hooks": [
+        "A clean, sound roof protects your sale price and buyer confidence. Useful for urgent clarity with proof.",
+        "Remove roof uncertainty before the building report does. Useful for urgent clarity with proof.",
+        "Curb appeal starts at the top and buyers notice more than you think. Useful for urgent clarity with proof."
+      ],
+      "ctas": [
+        "Book a pre-sale Roof Health Check",
+        "Request a sale-ready photo report for buyers",
+        "Call 0435 900 709 to get the roof campaign-ready"
+      ],
+      "content_ideas": {
+        "reel": "Pre-sale transformation: inspection photos, tidy repairs, clean finish, listing-ready wide shot. Audience focus: post-storm homeowners.",
+        "carousel": "Buyer objections killer: 5 common roof flags and the photo proof that resolves them. Audience focus: post-storm homeowners.",
+        "single_image": "Listing hero shot from the street with one line: roof checked, documented, and sorted. Audience focus: post-storm homeowners."
+      }
+    },
+    {
+      "audience": "Post-storm callers",
+      "angle": "Structural clarity",
+      "hooks": [
+        "Separate what is cosmetic from what is genuinely failing. Ideal for uncertainty after wind, hail, or heavy rain.",
+        "We inspect on the roof, then explain it in plain English with photos. Ideal for uncertainty after wind, hail, or heavy rain.",
+        "Clear scope logic stops guesswork and stops scope creep. Ideal for uncertainty after wind, hail, or heavy rain."
+      ],
+      "ctas": [
+        "Request a photo-backed roof condition report",
+        "Book an on-roof assessment",
+        "Call 0435 900 709 and get straight answers"
+      ],
+      "content_ideas": {
+        "reel": "Walk-through with on-screen labels: sound, ageing, failed, and why. Audience focus: post-storm homeowners.",
+        "carousel": "Annotated photos: ridge, valley, flashings, penetrations, with simple pass/fail notes. Audience focus: post-storm homeowners.",
+        "single_image": "One annotated defect photo with a short explanation and recommended next step. Audience focus: post-storm homeowners."
+      }
+    },
+    {
+      "audience": "Post-storm callers",
+      "angle": "Cosmetic uplift",
+      "hooks": [
+        "A tired roof can make the whole house look older than it is. Focused on urgent clarity with proof.",
+        "A proper restoration sharpens the whole exterior, not just the roof. Focused on urgent clarity with proof.",
+        "Clean prep and the right coating system is what makes the finish last. Focused on urgent clarity with proof."
+      ],
+      "ctas": [
+        "Book a Roof Restoration Assessment",
+        "Ask about 10, 15, and 20-year coating system options",
+        "Call 0435 900 709 to plan your roof transformation"
+      ],
+      "content_ideas": {
+        "reel": "Satisfying sequence: rebed, clean, repoint, paint, then wide reveal from the street. Audience focus: post-storm homeowners.",
+        "carousel": "Colour change options: 5 slides showing roof colour vs whole façade vibe, each with a real job photo. Audience focus: post-storm homeowners.",
+        "single_image": "After shot with a short caption: coating system tier used and why it suited the roof. Audience focus: post-storm homeowners."
+      }
+    },
+    {
+      "audience": "Post-storm callers",
+      "angle": "Leak prevention",
+      "hooks": [
+        "Most leaks start long before you see a stain on the ceiling. Designed for uncertainty after wind, hail, or heavy rain.",
+        "Stop water entry at the roof, not with a bucket inside the house. Designed for uncertainty after wind, hail, or heavy rain.",
+        "Find the weak points and seal them properly. Designed for uncertainty after wind, hail, or heavy rain."
+      ],
+      "ctas": [
+        "Book a leak-focused Roof Health Check",
+        "Request a leak prevention scope with photos",
+        "Call 0435 900 709 before the next heavy rain"
+      ],
+      "content_ideas": {
+        "reel": "Top 3 leak points on one roof, each shown in a close-up photo, with the fix explained briefly. Audience focus: post-storm homeowners.",
+        "carousel": "Leak hotspots: valleys, flashings, ridges, penetrations, gutters, with one photo example each. Audience focus: post-storm homeowners.",
+        "single_image": "Ceiling stain photo paired with roof entry point photo and a one-line cause. Audience focus: post-storm homeowners."
+      }
+    },
+    {
+      "audience": "Post-storm callers",
+      "angle": "Documentation & transparency",
+      "hooks": [
+        "No vague advice, just photos and a written scope you can keep. Helpful for urgent clarity with proof.",
+        "We show what we see so you can make the call with confidence. Helpful for urgent clarity with proof.",
+        "If it is not documented, it is not claimed. Helpful for urgent clarity with proof."
+      ],
+      "ctas": [
+        "Request a written, photo-backed scope",
+        "Book a documented Roof Health Check",
+        "Call 0435 900 709 and get the proof in writing"
+      ],
+      "content_ideas": {
+        "reel": "Screen-record style: quick tour of the photo report and how the scope ties to the photos. Audience focus: post-storm homeowners.",
+        "carousel": "What you receive: photos, notes, scope options, next steps, and clear exclusions. Audience focus: post-storm homeowners.",
+        "single_image": "Report cover shot with 3 bullet outcomes: found, fixed, recommended. Audience focus: post-storm homeowners."
+      }
+    },
+    {
+      "audience": "Post-storm callers",
+      "angle": "Photo-backed trust",
+      "hooks": [
+        "You do not need to climb up, we bring the roof to you in photos. Works for urgent clarity with proof.",
+        "Before, during, after. Proof at every step. Works for urgent clarity with proof.",
+        "Trust is earned with evidence, not talk. Works for urgent clarity with proof."
+      ],
+      "ctas": [
+        "Get Your Free Roof Health Check with photos",
+        "Book work that comes with before and after proof",
+        "Call 0435 900 709 and get evidence-first roofing"
+      ],
+      "content_ideas": {
+        "reel": "Before and after montage with 3 labelled fixes and a final wide reveal. Audience focus: post-storm homeowners.",
+        "carousel": "Proof timeline: before, defect close-up, repair stage, prep stage, final finish. Audience focus: post-storm homeowners.",
+        "single_image": "Four-photo grid: before, during, after, and the finished wide shot. Audience focus: post-storm homeowners."
+      }
+    },
+    {
+      "audience": "Leaking but unsure why homeowners",
+      "angle": "Peace of mind",
+      "hooks": [
+        "Get clarity on your roof before it becomes a problem. Built for root-cause finding.",
+        "Know what is happening up there, with photos to prove it. Built for root-cause finding.",
+        "A calm plan beats panic repairs in the middle of a storm. Built for root-cause finding."
+      ],
+      "ctas": [
+        "Get Your Free Roof Health Check",
+        "Book Your Roof Assessment",
+        "Call 0435 900 709 to lock in a time"
+      ],
+      "content_ideas": {
+        "reel": "30-second roof check highlights, one issue explained, one fix shown, finish with photo proof. Audience focus: leak-frustrated homeowners.",
+        "carousel": "Problem vs cosmetic: 5 slides showing what looks bad from the street vs what matters up top. Audience focus: leak-frustrated homeowners.",
+        "single_image": "Before/after split with one caption line: what we found, what we fixed, what it achieved. Audience focus: leak-frustrated homeowners."
+      }
+    },
+    {
+      "audience": "Leaking but unsure why homeowners",
+      "angle": "Preventative maintenance",
+      "hooks": [
+        "Fix small roof issues early so they do not turn into big damage. Best for root-cause finding.",
+        "Maintenance is cheaper than emergency call-outs and ceiling repairs. Best for root-cause finding.",
+        "A yearly roof check keeps the roof predictable. Best for root-cause finding."
+      ],
+      "ctas": [
+        "Book a preventative Roof Health Check",
+        "Request a photo-backed maintenance scope",
+        "Call 0435 900 709 and stay ahead of leaks"
+      ],
+      "content_ideas": {
+        "reel": "Quick maintenance run: gutters checked, ridge checked, valley checked, with 3 photo call-outs. Audience focus: leak-frustrated homeowners.",
+        "carousel": "Seasonal checklist: autumn leaf load, winter leaks, summer UV, spring growth, each with a photo example. Audience focus: leak-frustrated homeowners.",
+        "single_image": "Close-up of one early defect with a simple label: monitor vs fix now. Audience focus: leak-frustrated homeowners."
+      }
+    },
+    {
+      "audience": "Leaking but unsure why homeowners",
+      "angle": "Resale protection",
+      "hooks": [
+        "A clean, sound roof protects your sale price and buyer confidence. Useful for root-cause finding.",
+        "Remove roof uncertainty before the building report does. Useful for root-cause finding.",
+        "Curb appeal starts at the top and buyers notice more than you think. Useful for root-cause finding."
+      ],
+      "ctas": [
+        "Book a pre-sale Roof Health Check",
+        "Request a sale-ready photo report for buyers",
+        "Call 0435 900 709 to get the roof campaign-ready"
+      ],
+      "content_ideas": {
+        "reel": "Pre-sale transformation: inspection photos, tidy repairs, clean finish, listing-ready wide shot. Audience focus: leak-frustrated homeowners.",
+        "carousel": "Buyer objections killer: 5 common roof flags and the photo proof that resolves them. Audience focus: leak-frustrated homeowners.",
+        "single_image": "Listing hero shot from the street with one line: roof checked, documented, and sorted. Audience focus: leak-frustrated homeowners."
+      }
+    },
+    {
+      "audience": "Leaking but unsure why homeowners",
+      "angle": "Structural clarity",
+      "hooks": [
+        "Separate what is cosmetic from what is genuinely failing. Ideal for a leak that keeps coming back or makes no sense.",
+        "We inspect on the roof, then explain it in plain English with photos. Ideal for a leak that keeps coming back or makes no sense.",
+        "Clear scope logic stops guesswork and stops scope creep. Ideal for a leak that keeps coming back or makes no sense."
+      ],
+      "ctas": [
+        "Request a photo-backed roof condition report",
+        "Book an on-roof assessment",
+        "Call 0435 900 709 and get straight answers"
+      ],
+      "content_ideas": {
+        "reel": "Walk-through with on-screen labels: sound, ageing, failed, and why. Audience focus: leak-frustrated homeowners.",
+        "carousel": "Annotated photos: ridge, valley, flashings, penetrations, with simple pass/fail notes. Audience focus: leak-frustrated homeowners.",
+        "single_image": "One annotated defect photo with a short explanation and recommended next step. Audience focus: leak-frustrated homeowners."
+      }
+    },
+    {
+      "audience": "Leaking but unsure why homeowners",
+      "angle": "Cosmetic uplift",
+      "hooks": [
+        "A tired roof can make the whole house look older than it is. Focused on root-cause finding.",
+        "A proper restoration sharpens the whole exterior, not just the roof. Focused on root-cause finding.",
+        "Clean prep and the right coating system is what makes the finish last. Focused on root-cause finding."
+      ],
+      "ctas": [
+        "Book a Roof Restoration Assessment",
+        "Ask about 10, 15, and 20-year coating system options",
+        "Call 0435 900 709 to plan your roof transformation"
+      ],
+      "content_ideas": {
+        "reel": "Satisfying sequence: rebed, clean, repoint, paint, then wide reveal from the street. Audience focus: leak-frustrated homeowners.",
+        "carousel": "Colour change options: 5 slides showing roof colour vs whole façade vibe, each with a real job photo. Audience focus: leak-frustrated homeowners.",
+        "single_image": "After shot with a short caption: coating system tier used and why it suited the roof. Audience focus: leak-frustrated homeowners."
+      }
+    },
+    {
+      "audience": "Leaking but unsure why homeowners",
+      "angle": "Leak prevention",
+      "hooks": [
+        "Most leaks start long before you see a stain on the ceiling. Designed for a leak that keeps coming back or makes no sense.",
+        "Stop water entry at the roof, not with a bucket inside the house. Designed for a leak that keeps coming back or makes no sense.",
+        "Find the weak points and seal them properly. Designed for a leak that keeps coming back or makes no sense."
+      ],
+      "ctas": [
+        "Book a leak-focused Roof Health Check",
+        "Request a leak prevention scope with photos",
+        "Call 0435 900 709 before the next heavy rain"
+      ],
+      "content_ideas": {
+        "reel": "Top 3 leak points on one roof, each shown in a close-up photo, with the fix explained briefly. Audience focus: leak-frustrated homeowners.",
+        "carousel": "Leak hotspots: valleys, flashings, ridges, penetrations, gutters, with one photo example each. Audience focus: leak-frustrated homeowners.",
+        "single_image": "Ceiling stain photo paired with roof entry point photo and a one-line cause. Audience focus: leak-frustrated homeowners."
+      }
+    },
+    {
+      "audience": "Leaking but unsure why homeowners",
+      "angle": "Documentation & transparency",
+      "hooks": [
+        "No vague advice, just photos and a written scope you can keep. Helpful for root-cause finding.",
+        "We show what we see so you can make the call with confidence. Helpful for root-cause finding.",
+        "If it is not documented, it is not claimed. Helpful for root-cause finding."
+      ],
+      "ctas": [
+        "Request a written, photo-backed scope",
+        "Book a documented Roof Health Check",
+        "Call 0435 900 709 and get the proof in writing"
+      ],
+      "content_ideas": {
+        "reel": "Screen-record style: quick tour of the photo report and how the scope ties to the photos. Audience focus: leak-frustrated homeowners.",
+        "carousel": "What you receive: photos, notes, scope options, next steps, and clear exclusions. Audience focus: leak-frustrated homeowners.",
+        "single_image": "Report cover shot with 3 bullet outcomes: found, fixed, recommended. Audience focus: leak-frustrated homeowners."
+      }
+    },
+    {
+      "audience": "Leaking but unsure why homeowners",
+      "angle": "Photo-backed trust",
+      "hooks": [
+        "You do not need to climb up, we bring the roof to you in photos. Works for root-cause finding.",
+        "Before, during, after. Proof at every step. Works for root-cause finding.",
+        "Trust is earned with evidence, not talk. Works for root-cause finding."
+      ],
+      "ctas": [
+        "Get Your Free Roof Health Check with photos",
+        "Book work that comes with before and after proof",
+        "Call 0435 900 709 and get evidence-first roofing"
+      ],
+      "content_ideas": {
+        "reel": "Before and after montage with 3 labelled fixes and a final wide reveal. Audience focus: leak-frustrated homeowners.",
+        "carousel": "Proof timeline: before, defect close-up, repair stage, prep stage, final finish. Audience focus: leak-frustrated homeowners.",
+        "single_image": "Four-photo grid: before, during, after, and the finished wide shot. Audience focus: leak-frustrated homeowners."
+      }
+    }
+  ],
+  "service_location_doctrine": {
+    "base_location": "Clyde North, VIC",
+    "zones": {
+      "core": {
+        "radius_km": [
+          0,
+          20
+        ],
+        "suburbs": [
+          "Clyde North",
+          "Clyde",
+          "Berwick",
+          "Beaconsfield",
+          "Officer",
+          "Officer South",
+          "Cranbourne",
+          "Cranbourne North",
+          "Cranbourne West",
+          "Cranbourne East",
+          "Narre Warren",
+          "Narre Warren South",
+          "Hampton Park",
+          "Hallam",
+          "Lynbrook"
+        ],
+        "keyword_patterns": [
+          "Roof Restoration [Suburb]",
+          "Roof Painting [Suburb]",
+          "Ridge Capping Repairs [Suburb]",
+          "Leaking Roof [Suburb]",
+          "Gutter Cleaning [Suburb]"
+        ]
+      },
+      "growth": {
+        "radius_km": [
+          20,
+          35
+        ],
+        "suburbs": [
+          "Pakenham",
+          "Pakenham East",
+          "Pakenham Upper",
+          "Cardinia",
+          "Dandenong",
+          "Dandenong North",
+          "Dandenong South",
+          "Endeavour Hills",
+          "Rowville",
+          "Keysborough",
+          "Noble Park",
+          "Springvale",
+          "Langwarrin",
+          "Carrum Downs"
+        ],
+        "keyword_patterns": [
+          "Roof Restoration [Suburb]",
+          "Roof Painting [Suburb]",
+          "Ridge Capping Repairs [Suburb]",
+          "Leaking Roof [Suburb]",
+          "Gutter Cleaning [Suburb]"
+        ]
+      },
+      "expansion": {
+        "radius_km": [
+          35,
+          50
+        ],
+        "suburbs": [
+          "Frankston",
+          "Frankston South",
+          "Seaford",
+          "Carrum",
+          "Chelsea",
+          "Mornington",
+          "Mount Eliza",
+          "Mount Martha",
+          "Emerald",
+          "Belgrave",
+          "Belgrave Heights",
+          "Ferntree Gully"
+        ],
+        "keyword_patterns": [
+          "Roof Restoration [Suburb]",
+          "Roof Painting [Suburb]",
+          "Ridge Capping Repairs [Suburb]",
+          "Leaking Roof [Suburb]",
+          "Gutter Cleaning [Suburb]"
+        ]
+      }
+    },
+    "rules": [
+      "Never claim 'Melbourne-wide' unless factually accurate for current capacity and travel policy."
+    ],
+    "assumptions": [
+      "Suburb lists are best-effort and non-exhaustive.",
+      "Zones are measured from Clyde North and may vary by travel time."
+    ]
+  },
+  "hashtag_doctrine": {
+    "principles": [
+      "Hashtags are routing, not decoration.",
+      "Relevance beats volume.",
+      "Specific beats generic.",
+      "Use fewer tags rather than spam blocks."
+    ],
+    "operational_rules": {
+      "max_hashtags_per_post": 5,
+      "banned_restricted_warning": "Banned and restricted hashtags change. Check before posting."
+    },
+    "groups_by_intent": [
+      "Local / geo",
+      "Trade / service",
+      "Homeowner intent",
+      "Property & real estate"
+    ],
+    "hashtag_packs": [
+      {
+        "name": "Local Proof",
+        "platform": "Instagram/Facebook",
+        "hashtags": [
+          "#ClydeNorth",
+          "#Berwick",
+          "#Cranbourne",
+          "#SEMELBOURNE",
+          "#LocalTrades"
+        ],
+        "use_case": "Local job proof and before/after"
+      },
+      {
+        "name": "Roof Restoration Intent",
+        "platform": "Instagram/Facebook",
+        "hashtags": [
+          "#RoofRestoration",
+          "#RoofPainting",
+          "#RoofCleaning",
+          "#RidgeCapping",
+          "#AussieHomes"
+        ],
+        "use_case": "Restoration transformations and coating outcomes"
+      },
+      {
+        "name": "Leak Help Now",
+        "platform": "Instagram/Facebook",
+        "hashtags": [
+          "#LeakingRoof",
+          "#RoofLeak",
+          "#RoofRepairs",
+          "#MelbourneHomes",
+          "#SEMELBOURNE"
+        ],
+        "use_case": "Leak detection and urgent repairs"
+      },
+      {
+        "name": "Property Manager Utility",
+        "platform": "Instagram/Facebook",
+        "hashtags": [
+          "#PropertyManager",
+          "#RentalProperty",
+          "#BuildingMaintenance",
+          "#RoofInspection",
+          "#MelbourneRealEstate"
+        ],
+        "use_case": "Reports, compliance, ongoing maintenance"
+      },
+      {
+        "name": "Pre-Sale Ready",
+        "platform": "Instagram/Facebook",
+        "hashtags": [
+          "#PreSalePrep",
+          "#CurbAppeal",
+          "#RoofRestoration",
+          "#MelbourneRealEstate",
+          "#HomeForSale"
+        ],
+        "use_case": "Vendors and agents preparing for listing"
+      },
+      {
+        "name": "Storm and Insurance Proof",
+        "platform": "Instagram/Facebook",
+        "hashtags": [
+          "#StormDamage",
+          "#RoofInspection",
+          "#RoofRepairs",
+          "#SEMELBOURNE",
+          "#MelbourneHomes"
+        ],
+        "use_case": "Post-storm checks and documentation"
+      }
+    ]
+  },
+  "proof_first_content_doctrine": {
+    "minimum_photo_set_per_job": [
+      "Front wide shot",
+      "Rear wide shot",
+      "Two close-ups of main defects",
+      "Two junction photos (ridge and valley or flashing)",
+      "Finished wide shot"
+    ],
+    "service_specific_minimums": {
+      "Roof Health Check": "Add 6–10 defect and junction photos",
+      "Ridge work": "Before and after ridge line close-ups",
+      "Valley replacement": "Old valley condition + install stage photos",
+      "Coatings": "Post-clean prep + primer + final finish photos"
+    },
+    "minimum_notes_on_site": [
+      "Roof type and estimated age (ASSUMPTION if unknown)",
+      "Access notes (storey height, pitch, hazards)",
+      "Defect list with severity (urgent, soon, monitor)",
+      "Outcome recommendation logic (why this scope, why not more)",
+      "Product system used (primer + membrane tier)"
+    ],
+    "acceptable_caption_inputs": [
+      "Suburb",
+      "Roof type",
+      "Main issue",
+      "What was done",
+      "Proof points (photos, stage shots, scope logic)",
+      "Warranty language as a range unless product-specific"
+    ],
+    "standard_disclaimers": [
+      "Results vary by roof condition.",
+      "Access and safety dependent.",
+      "Inspection required before quoting and before recommending scope.",
+      "Warranty depends on system and products used, and correct preparation.",
+      "Product warranties are subject to manufacturer terms and roof suitability."
+    ]
+  },
+  "style_and_compliance_rules": {
+    "language": "Australian English",
+    "format_rules": [
+      "Short paragraphs (max 3 lines) in client-facing outputs",
+      "Clear headings and numbered lists in doctrine outputs"
+    ],
+    "hard_rules": [
+      "No pricing unless explicitly supplied by the user (otherwise mark ASSUMPTION).",
+      "No competitor references.",
+      "No unsafe roofing instructions.",
+      "No scare tactics.",
+      "No fabricated reviews, licences, or warranties."
+    ]
+  },
+  "counts": {
+    "audiences_count": 9,
+    "angles_count": 8,
+    "matrix_cells": 72,
+    "hooks_total": 216,
+    "ctas_total": 216,
+    "content_ideas_total": 216,
+    "total_message_assets_if_counting_hooks_ctas_and_ideas": 648
+  }
+}

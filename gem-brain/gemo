@@ -1,0 +1,73 @@
+#!/bin/bash
+# GEM Operator CLI Launcher
+# Usage: gemo "your message" or gemo -i for interactive mode
+
+GEM_BRAIN="/data/data/com.termux/files/home/GEM/gem-brain"
+
+case "${1:-}" in
+  -i|--interactive|interactive)
+    node "$GEM_BRAIN/scripts/operator-cli.js" --interactive
+    ;;
+  -a|--analyze)
+    shift
+    node "$GEM_BRAIN/scripts/operator-cli.js" --mode analyze "$@"
+    ;;
+  -p|--plan)
+    shift
+    node "$GEM_BRAIN/scripts/operator-cli.js" --mode plan "$@"
+    ;;
+  -e|--execute)
+    shift
+    node "$GEM_BRAIN/scripts/operator-cli.js" --mode enqueue "$@"
+    ;;
+  -c|--config)
+    echo "Opening config file..."
+    cat "$GEM_BRAIN/.config/operator.json" 2>/dev/null || echo "No config yet - run gemo -i first"
+    ;;
+  --edit-config)
+    ${EDITOR:-nano} "$GEM_BRAIN/.config/operator.json"
+    ;;
+  --reset-config)
+    rm -f "$GEM_BRAIN/.config/operator.json"
+    echo "Config reset. Will use defaults on next run."
+    ;;
+  --clear-memory)
+    rm -rf "$GEM_BRAIN/.memory"
+    echo "Memory cleared."
+    ;;
+  -h|--help|help)
+    echo "GEM Operator CLI"
+    echo ""
+    echo "Usage:"
+    echo "  gemo \"message\"              Analyze intent (default)"
+    echo "  gemo -i                      Interactive REPL mode"
+    echo "  gemo -a \"message\"           Analyze only (no execution)"
+    echo "  gemo -p \"message\"           Plan and show run plan"
+    echo "  gemo -e \"message\"           Execute (enqueue to Supabase)"
+    echo ""
+    echo "Config & Memory:"
+    echo "  gemo -c                      Show current config"
+    echo "  gemo --edit-config           Edit config file"
+    echo "  gemo --reset-config          Reset config to defaults"
+    echo "  gemo --clear-memory          Clear all memory"
+    echo ""
+    echo "Examples:"
+    echo "  gemo \"check system health\""
+    echo "  gemo -i"
+    echo "  gemo -e \"create task to call John at 0412345678\""
+    echo ""
+    echo "Interactive Commands (in -i mode):"
+    echo "  :memory               Show memory status"
+    echo "  :history              Show recent history"
+    echo "  :remember <note>      Remember a note"
+    echo "  :config               Show configuration"
+    echo "  :instruction          Show/append system instruction"
+    echo "  :help                 Full command list"
+    ;;
+  "")
+    node "$GEM_BRAIN/scripts/operator-cli.js" --interactive
+    ;;
+  *)
+    node "$GEM_BRAIN/scripts/operator-cli.js" --mode analyze "$@"
+    ;;
+esac

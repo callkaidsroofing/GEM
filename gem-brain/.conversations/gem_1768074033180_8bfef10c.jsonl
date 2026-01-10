@@ -1,0 +1,3 @@
+{"ts":1768074033181,"role":"user","content":"I need a roof inspection in Cranbourne for a customer named John Smith, phone 0412345678","action_id":"20260111-0640-SYSTEM-need_roof_inspection"}
+{"ts":1768074175758,"role":"user","content":"Customer in Berwick needs a roof health check - they have a tile roof with moss growth","action_id":"20260111-0642-SYSTEM-customer_berwick_needs"}
+{"ts":1768074255025,"role":"user","content":"Send an SMS to 0412345678 confirming their inspection appointment for tomorrow","action_id":"20260111-0644-SYSTEM-send_sms_0412345678"}
