@@ -279,10 +279,203 @@ export async function getContact(contactId) {
   return request('GET', `/contacts/${contactId}`);
 }
 
+// ============================================
+// OUTBOUND SYNC METHODS
+// ============================================
+
+/**
+ * Create a note on a contact
+ * @param {string} contactId - HighLevel contact ID
+ * @param {string} body - Note content
+ * @returns {Promise<{ success: boolean, data?: Object, error?: string }>}
+ */
+export async function createNote(contactId, body) {
+  const config = checkConfiguration();
+  if (!config.configured) {
+    return { success: false, error: 'HighLevel integration not configured', missing: config.missing };
+  }
+
+  return request('POST', `/contacts/${contactId}/notes`, {
+    body: { body }
+  });
+}
+
+/**
+ * Create a task for a contact
+ * @param {string} contactId - HighLevel contact ID
+ * @param {Object} task - Task details
+ * @param {string} task.title - Task title
+ * @param {string} task.body - Task description
+ * @param {string} task.dueDate - ISO date string
+ * @param {boolean} task.completed - Whether task is completed
+ * @returns {Promise<{ success: boolean, data?: Object, error?: string }>}
+ */
+export async function createTask(contactId, task) {
+  const config = checkConfiguration();
+  if (!config.configured) {
+    return { success: false, error: 'HighLevel integration not configured', missing: config.missing };
+  }
+
+  return request('POST', `/contacts/${contactId}/tasks`, {
+    body: {
+      title: task.title,
+      body: task.body || task.description,
+      dueDate: task.dueDate,
+      completed: task.completed || false
+    }
+  });
+}
+
+/**
+ * Update an opportunity (pipeline stage, value, etc.)
+ * @param {string} opportunityId - HighLevel opportunity ID
+ * @param {Object} updates - Fields to update
+ * @param {string} updates.pipelineStageId - New stage ID
+ * @param {number} updates.monetaryValue - Opportunity value
+ * @param {string} updates.status - open, won, lost, abandoned
+ * @returns {Promise<{ success: boolean, data?: Object, error?: string }>}
+ */
+export async function updateOpportunity(opportunityId, updates) {
+  const config = checkConfiguration();
+  if (!config.configured) {
+    return { success: false, error: 'HighLevel integration not configured', missing: config.missing };
+  }
+
+  const body = {};
+  if (updates.pipelineStageId) body.pipelineStageId = updates.pipelineStageId;
+  if (updates.monetaryValue !== undefined) body.monetaryValue = updates.monetaryValue;
+  if (updates.status) body.status = updates.status;
+  if (updates.name) body.name = updates.name;
+
+  return request('PUT', `/opportunities/${opportunityId}`, { body });
+}
+
+/**
+ * Get opportunities for a contact
+ * @param {string} contactId - HighLevel contact ID
+ * @returns {Promise<{ success: boolean, data?: Object, error?: string }>}
+ */
+export async function getContactOpportunities(contactId) {
+  const config = checkConfiguration();
+  if (!config.configured) {
+    return { success: false, error: 'HighLevel integration not configured', missing: config.missing };
+  }
+
+  const locationId = process.env.HIGHLEVEL_LOCATION_ID;
+  return request('GET', '/opportunities/search', {
+    params: { location_id: locationId, contact_id: contactId }
+  });
+}
+
+/**
+ * Update a contact
+ * @param {string} contactId - HighLevel contact ID
+ * @param {Object} updates - Fields to update
+ * @returns {Promise<{ success: boolean, data?: Object, error?: string }>}
+ */
+export async function updateContact(contactId, updates) {
+  const config = checkConfiguration();
+  if (!config.configured) {
+    return { success: false, error: 'HighLevel integration not configured', missing: config.missing };
+  }
+
+  return request('PUT', `/contacts/${contactId}`, { body: updates });
+}
+
+/**
+ * Add tags to a contact
+ * @param {string} contactId - HighLevel contact ID
+ * @param {string[]} tags - Array of tag names
+ * @returns {Promise<{ success: boolean, data?: Object, error?: string }>}
+ */
+export async function addContactTags(contactId, tags) {
+  const config = checkConfiguration();
+  if (!config.configured) {
+    return { success: false, error: 'HighLevel integration not configured', missing: config.missing };
+  }
+
+  return request('POST', `/contacts/${contactId}/tags`, {
+    body: { tags }
+  });
+}
+
+/**
+ * Upload a file/document for a contact (via URL)
+ * Note: GHL doesn't have direct document upload. We create a note with the URL.
+ * @param {string} contactId - HighLevel contact ID
+ * @param {Object} doc - Document details
+ * @param {string} doc.title - Document title
+ * @param {string} doc.url - Public URL to the document
+ * @param {string} doc.type - Document type (inspection, quote, photo)
+ * @returns {Promise<{ success: boolean, data?: Object, error?: string }>}
+ */
+export async function uploadDocument(contactId, doc) {
+  const config = checkConfiguration();
+  if (!config.configured) {
+    return { success: false, error: 'HighLevel integration not configured', missing: config.missing };
+  }
+
+  // GHL doesn't have a documents API - we use notes with embedded links
+  const noteBody = `📎 **${doc.title}**\n\nType: ${doc.type || 'document'}\nLink: ${doc.url}\n\nUploaded via CKR-Inspections sync`;
+
+  return request('POST', `/contacts/${contactId}/notes`, {
+    body: { body: noteBody }
+  });
+}
+
+/**
+ * Search opportunities with filters
+ * @param {Object} filters - Search filters
+ * @param {string} filters.pipelineId - Pipeline ID
+ * @param {string} filters.stageId - Pipeline stage ID
+ * @param {string} filters.status - open, won, lost
+ * @param {number} filters.limit - Max results
+ * @returns {Promise<{ success: boolean, data?: Object, error?: string }>}
+ */
+export async function searchOpportunities(filters = {}) {
+  const config = checkConfiguration();
+  if (!config.configured) {
+    return { success: false, error: 'HighLevel integration not configured', missing: config.missing };
+  }
+
+  const locationId = process.env.HIGHLEVEL_LOCATION_ID;
+  const params = { location_id: locationId, limit: filters.limit || 100 };
+
+  if (filters.pipelineId) params.pipeline_id = filters.pipelineId;
+  if (filters.stageId) params.pipeline_stage_id = filters.stageId;
+  if (filters.status) params.status = filters.status;
+
+  return request('GET', '/opportunities/search', { params });
+}
+
+/**
+ * Get a single opportunity by ID
+ * @param {string} opportunityId - HighLevel opportunity ID
+ * @returns {Promise<{ success: boolean, data?: Object, error?: string }>}
+ */
+export async function getOpportunity(opportunityId) {
+  const config = checkConfiguration();
+  if (!config.configured) {
+    return { success: false, error: 'HighLevel integration not configured', missing: config.missing };
+  }
+
+  return request('GET', `/opportunities/${opportunityId}`);
+}
+
 export default {
   checkConfiguration,
   healthCheck,
   fetchContacts,
   getContact,
-  computePayloadHash
+  computePayloadHash,
+  // Outbound sync methods
+  createNote,
+  createTask,
+  updateOpportunity,
+  getContactOpportunities,
+  updateContact,
+  addContactTags,
+  uploadDocument,
+  searchOpportunities,
+  getOpportunity
 };

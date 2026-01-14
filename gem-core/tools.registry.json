@@ -1272,6 +1272,122 @@
       "idempotency": { "mode": "safe-retry" },
       "timeout_ms": 120000,
       "receipt_fields": ["result.status", "result.counts", "result.next_cursor", "effects.db_writes"]
+    },
+    {
+      "name": "integrations.highlevel.sync_inspection",
+      "description": "Sync completed inspection to GoHighLevel. Creates a note with inspection summary and moves opportunity to Quoting stage.",
+      "input_schema": {
+        "type": "object",
+        "required": ["inspection_id", "highlevel_contact_id"],
+        "properties": {
+          "inspection_id": { "type": "string", "format": "uuid", "description": "CKR inspection ID" },
+          "lead_id": { "type": "string", "format": "uuid", "description": "CKR lead ID" },
+          "highlevel_contact_id": { "type": "string", "description": "GoHighLevel contact ID" }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": { "type": "string", "enum": ["synced", "queued_retry", "error"] },
+          "inspection_id": { "type": "string" },
+          "highlevel_contact_id": { "type": "string" },
+          "note_id": { "type": "string" },
+          "stage_updated": { "type": "boolean" },
+          "error": { "type": "string" }
+        }
+      },
+      "permissions": ["read:inspections", "write:integrations"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 30000,
+      "receipt_fields": ["result.status", "result.note_id", "result.stage_updated"]
+    },
+    {
+      "name": "integrations.highlevel.sync_quote",
+      "description": "Sync quote to GoHighLevel. Creates a note with quote details, updates opportunity value, and creates follow-up task.",
+      "input_schema": {
+        "type": "object",
+        "required": ["quote_id", "highlevel_contact_id"],
+        "properties": {
+          "quote_id": { "type": "string", "format": "uuid", "description": "CKR quote ID" },
+          "lead_id": { "type": "string", "format": "uuid", "description": "CKR lead ID" },
+          "highlevel_contact_id": { "type": "string", "description": "GoHighLevel contact ID" },
+          "quote_amount": { "type": "number", "description": "Quote amount in AUD" },
+          "quote_url": { "type": "string", "format": "uri", "description": "URL to quote PDF" }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": { "type": "string", "enum": ["synced", "error"] },
+          "quote_id": { "type": "string" },
+          "highlevel_contact_id": { "type": "string" },
+          "note_id": { "type": "string" },
+          "task_created": { "type": "boolean" },
+          "stage_updated": { "type": "boolean" },
+          "error": { "type": "string" }
+        }
+      },
+      "permissions": ["read:quotes", "write:integrations"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 30000,
+      "receipt_fields": ["result.status", "result.note_id", "result.task_created"]
+    },
+    {
+      "name": "integrations.highlevel.update_lead_stage",
+      "description": "Update lead stage in GoHighLevel based on CKR lead status change.",
+      "input_schema": {
+        "type": "object",
+        "required": ["highlevel_contact_id", "stage"],
+        "properties": {
+          "lead_id": { "type": "string", "format": "uuid", "description": "CKR lead ID" },
+          "highlevel_contact_id": { "type": "string", "description": "GoHighLevel contact ID" },
+          "stage": { "type": "string", "enum": ["new", "contacted", "inspection_scheduled", "quoted", "won", "lost"], "description": "CKR lead status" },
+          "notes": { "type": "string", "description": "Optional note to add" }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": { "type": "string", "enum": ["synced", "error"] },
+          "highlevel_contact_id": { "type": "string" },
+          "opportunity_id": { "type": "string" },
+          "new_stage": { "type": "string" },
+          "error": { "type": "string" }
+        }
+      },
+      "permissions": ["read:leads", "write:integrations"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 20000,
+      "receipt_fields": ["result.status", "result.new_stage"]
+    },
+    {
+      "name": "integrations.highlevel.process_sync_queue",
+      "description": "Process pending items in the GoHighLevel sync queue. Handles retries with exponential backoff.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "limit": { "type": "integer", "default": 10, "description": "Max items to process" }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": { "type": "string", "enum": ["ok", "error"] },
+          "processed": { "type": "integer" },
+          "succeeded": { "type": "integer" },
+          "failed": { "type": "integer" },
+          "message": { "type": "string" },
+          "error": { "type": "string" }
+        }
+      },
+      "permissions": ["read:integrations", "write:integrations"],
+      "idempotency": { "mode": "safe-retry" },
+      "timeout_ms": 60000,
+      "receipt_fields": ["result.status", "result.processed", "result.succeeded"]
     }
   ]
 }

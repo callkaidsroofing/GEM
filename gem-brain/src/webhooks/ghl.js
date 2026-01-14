@@ -49,41 +49,60 @@ const EVENT_TO_TOOL = {
 
 /**
  * Payload Transformers - Convert GHL payload to GEM tool input
+ * All transformers are async to support database lookups
  */
 const PAYLOAD_TRANSFORMERS = {
-  ContactCreate: (payload) => ({
-    name: `${payload.firstName || ''} ${payload.lastName || ''}`.trim() || 'Unknown',
-    phone: payload.phone || payload.mobile,
-    email: payload.email,
-    suburb: payload.city || payload.address1,
-    source: 'ghl',
-    leadconnector_contact_id: payload.id,
-    metadata: {
-      ghl_location_id: payload.locationId,
-      ghl_tags: payload.tags,
-      ghl_custom_fields: payload.customFields,
-      webhook_received_at: new Date().toISOString(),
-    },
-  }),
+  ContactCreate: async (payload) => {
+    // Track inbound sync
+    await trackInboundSync(payload.id, payload.locationId, payload);
 
-  ContactUpdate: (payload) => ({
-    leadconnector_contact_id: payload.id,
-    updates: {
-      name: `${payload.firstName || ''} ${payload.lastName || ''}`.trim(),
+    return {
+      name: `${payload.firstName || ''} ${payload.lastName || ''}`.trim() || 'Unknown',
+      phone: payload.phone || payload.mobile,
       email: payload.email,
-      phone: payload.phone,
-    },
-    metadata: {
-      ghl_tags: payload.tags,
-      webhook_received_at: new Date().toISOString(),
-    },
-  }),
+      suburb: payload.city || payload.address1,
+      source: 'ghl',
+      leadconnector_contact_id: payload.id,
+      highlevel_contact_id: payload.id,
+      metadata: {
+        ghl_location_id: payload.locationId,
+        ghl_tags: payload.tags,
+        ghl_custom_fields: payload.customFields,
+        webhook_received_at: new Date().toISOString(),
+      },
+    };
+  },
 
-  AppointmentCreate: (payload) => ({
+  ContactUpdate: async (payload) => {
+    // Track inbound sync
+    await trackInboundSync(payload.id, payload.locationId, payload);
+
+    return {
+      leadconnector_contact_id: payload.id,
+      highlevel_contact_id: payload.id,
+      updates: {
+        name: `${payload.firstName || ''} ${payload.lastName || ''}`.trim(),
+        email: payload.email,
+        phone: payload.phone,
+        address: payload.address1,
+        city: payload.city,
+        state: payload.state,
+        postal_code: payload.postalCode,
+      },
+      metadata: {
+        ghl_tags: payload.tags,
+        ghl_location_id: payload.locationId,
+        webhook_received_at: new Date().toISOString(),
+      },
+    };
+  },
+
+  AppointmentCreate: async (payload) => ({
     title: payload.title || 'GHL Appointment',
     start_time: payload.startTime,
     end_time: payload.endTime,
     attendee_contact_id: payload.contactId,
+    highlevel_contact_id: payload.contactId,
     location: payload.address,
     notes: payload.notes,
     metadata: {
@@ -93,23 +112,52 @@ const PAYLOAD_TRANSFORMERS = {
     },
   }),
 
-  OpportunityStageUpdate: (payload) => ({
-    leadconnector_contact_id: payload.contactId,
-    stage: mapGHLStageToGEM(payload.pipelineStage),
-    notes: `Stage updated via GHL: ${payload.pipelineStage}`,
-    metadata: {
-      ghl_opportunity_id: payload.id,
-      ghl_pipeline_id: payload.pipelineId,
-      webhook_received_at: new Date().toISOString(),
-    },
-  }),
+  OpportunityStageUpdate: async (payload) => {
+    // Use async stage mapping with database lookup
+    const gemStage = await mapGHLStageToGEM(payload.pipelineStage, payload.pipelineStageId);
 
-  TaskCreate: (payload) => ({
+    return {
+      leadconnector_contact_id: payload.contactId,
+      highlevel_contact_id: payload.contactId,
+      highlevel_opportunity_id: payload.id,
+      stage: gemStage,
+      notes: `Stage updated via GHL: ${payload.pipelineStage}`,
+      metadata: {
+        ghl_opportunity_id: payload.id,
+        ghl_pipeline_id: payload.pipelineId,
+        ghl_stage_id: payload.pipelineStageId,
+        ghl_stage_name: payload.pipelineStage,
+        webhook_received_at: new Date().toISOString(),
+      },
+    };
+  },
+
+  OpportunityCreate: async (payload) => {
+    const gemStage = await mapGHLStageToGEM(payload.pipelineStage, payload.pipelineStageId);
+
+    return {
+      leadconnector_contact_id: payload.contactId,
+      highlevel_contact_id: payload.contactId,
+      highlevel_opportunity_id: payload.id,
+      name: payload.name,
+      stage: gemStage,
+      monetary_value: payload.monetaryValue || 0,
+      metadata: {
+        ghl_opportunity_id: payload.id,
+        ghl_pipeline_id: payload.pipelineId,
+        ghl_stage_id: payload.pipelineStageId,
+        webhook_received_at: new Date().toISOString(),
+      },
+    };
+  },
+
+  TaskCreate: async (payload) => ({
     title: payload.title,
     description: payload.body || payload.description,
     due_date: payload.dueDate,
     assigned_to: payload.assignedTo,
     priority: payload.priority || 'medium',
+    highlevel_contact_id: payload.contactId,
     metadata: {
       ghl_task_id: payload.id,
       ghl_contact_id: payload.contactId,
@@ -117,10 +165,11 @@ const PAYLOAD_TRANSFORMERS = {
     },
   }),
 
-  NoteCreate: (payload) => ({
+  NoteCreate: async (payload) => ({
     content: payload.body,
     entity_type: 'lead',
     entity_id: payload.contactId,
+    highlevel_contact_id: payload.contactId,
     metadata: {
       ghl_note_id: payload.id,
       webhook_received_at: new Date().toISOString(),
@@ -130,26 +179,105 @@ const PAYLOAD_TRANSFORMERS = {
 
 /**
  * Map GHL pipeline stages to GEM lead stages
+ * Uses database mapping table with fallback to hardcoded values
  */
-function mapGHLStageToGEM(ghlStage) {
+const STAGE_MAPPING_CACHE = {
+  data: null,
+  lastFetch: 0,
+  ttl: 5 * 60 * 1000 // 5 minutes
+};
+
+async function loadStageMappingFromDB() {
+  if (STAGE_MAPPING_CACHE.data && Date.now() - STAGE_MAPPING_CACHE.lastFetch < STAGE_MAPPING_CACHE.ttl) {
+    return STAGE_MAPPING_CACHE.data;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('highlevel_stage_mapping')
+      .select('highlevel_stage_id, highlevel_stage_name, ckr_lead_status');
+
+    if (!error && data) {
+      const mapping = {};
+      data.forEach(row => {
+        mapping[row.highlevel_stage_id] = row.ckr_lead_status;
+        mapping[row.highlevel_stage_name] = row.ckr_lead_status;
+        mapping[row.highlevel_stage_name.toLowerCase()] = row.ckr_lead_status;
+      });
+      STAGE_MAPPING_CACHE.data = mapping;
+      STAGE_MAPPING_CACHE.lastFetch = Date.now();
+      return mapping;
+    }
+  } catch (err) {
+    console.warn('Failed to load stage mapping from DB:', err.message);
+  }
+
+  return null;
+}
+
+async function mapGHLStageToGEM(ghlStage, stageId = null) {
+  // Try database mapping first
+  const dbMapping = await loadStageMappingFromDB();
+  if (dbMapping) {
+    if (stageId && dbMapping[stageId]) return dbMapping[stageId];
+    if (dbMapping[ghlStage]) return dbMapping[ghlStage];
+    if (dbMapping[ghlStage?.toLowerCase()]) return dbMapping[ghlStage.toLowerCase()];
+  }
+
+  // Fallback to hardcoded mapping
   const stageMapping = {
     new: 'new',
     'New Lead': 'new',
     contacted: 'contacted',
     Contacted: 'contacted',
+    'Roof Health Check Booked': 'inspection_scheduled',
     'Appointment Set': 'inspection_scheduled',
     'appointment set': 'inspection_scheduled',
+    'Quoting': 'quoted',
     'Quote Sent': 'quoted',
     'quote sent': 'quoted',
+    'Follow Up': 'quoted',
+    'Services Sold': 'won',
     Won: 'won',
     won: 'won',
     'Closed Won': 'won',
+    'Ghosting': 'lost',
+    'Disqualified': 'lost',
     Lost: 'lost',
     lost: 'lost',
     'Closed Lost': 'lost',
   };
 
   return stageMapping[ghlStage] || 'new';
+}
+
+/**
+ * Track inbound sync in database
+ */
+async function trackInboundSync(contactId, locationId, payload) {
+  try {
+    const payloadHash = crypto
+      .createHash('sha256')
+      .update(JSON.stringify(payload))
+      .digest('hex');
+
+    await supabase
+      .from('highlevel_contact_sync')
+      .upsert({
+        highlevel_contact_id: contactId,
+        highlevel_location_id: locationId,
+        sync_direction: 'inbound',
+        sync_status: 'synced',
+        last_sync_at: new Date().toISOString(),
+        last_sync_direction: 'inbound',
+        highlevel_updated_at: new Date().toISOString(),
+        highlevel_payload_hash: payloadHash
+      }, {
+        onConflict: 'highlevel_contact_id,highlevel_location_id'
+      });
+  } catch (err) {
+    console.warn('Failed to track inbound sync:', err.message);
+  }
 }
 
 /**
@@ -221,9 +349,9 @@ export async function handleGHLWebhook(req, res) {
       });
     }
 
-    // Transform payload
+    // Transform payload (transformers are now async)
     const transformer = PAYLOAD_TRANSFORMERS[event];
-    const toolInput = transformer ? transformer(payload) : payload;
+    const toolInput = transformer ? await transformer(payload) : payload;
 
     // Check for required fields
     if (!toolInput || Object.keys(toolInput).length === 0) {
@@ -234,6 +362,14 @@ export async function handleGHLWebhook(req, res) {
         event,
       });
     }
+
+    // Add sync tracking metadata
+    toolInput._sync_metadata = {
+      source: 'ghl_webhook',
+      direction: 'inbound',
+      received_at: new Date().toISOString(),
+      highlevel_location_id: payload.locationId || process.env.HIGHLEVEL_LOCATION_ID
+    };
 
     // Enqueue tool call
     const { data: call, error } = await supabase
@@ -299,12 +435,23 @@ export function setupGHLWebhookRoutes(app) {
 
   // Health check for webhook endpoint
   app.get('/webhooks/ghl/health', (req, res) => {
+    // Support both naming conventions for Private Integration token
+    const hasPrivateIntegrationToken = !!(process.env.HIGHLEVEL_PRIVATE_API_KEY || process.env.GHL_API_KEY);
+    const hasLocationId = !!(process.env.HIGHLEVEL_LOCATION_ID || process.env.GHL_LOCATION_ID);
+
     res.json({
-      status: 'ok',
+      status: hasPrivateIntegrationToken && hasLocationId ? 'ok' : 'degraded',
       integration: 'GoHighLevel',
-      configured: !!process.env.GHL_API_KEY,
+      api_version: 'v2.0',
+      configured: hasPrivateIntegrationToken && hasLocationId,
+      private_integration_token: hasPrivateIntegrationToken,
+      location_id_set: hasLocationId,
       signature_verification: !!process.env.GHL_WEBHOOK_SECRET,
       supported_events: Object.keys(EVENT_TO_TOOL),
+      security_notes: {
+        token_type: 'Private Integration (static, requires manual 90-day rotation)',
+        rotation_reminder: 'Rotate token every 90 days via GHL Settings > Private Integrations',
+      },
     });
   });
 

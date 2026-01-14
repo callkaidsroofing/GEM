@@ -1,3 +1,14 @@
 {"ts":1768074033181,"role":"user","content":"I need a roof inspection in Cranbourne for a customer named John Smith, phone 0412345678","action_id":"20260111-0640-SYSTEM-need_roof_inspection"}
 {"ts":1768074175758,"role":"user","content":"Customer in Berwick needs a roof health check - they have a tile roof with moss growth","action_id":"20260111-0642-SYSTEM-customer_berwick_needs"}
 {"ts":1768074255025,"role":"user","content":"Send an SMS to 0412345678 confirming their inspection appointment for tomorrow","action_id":"20260111-0644-SYSTEM-send_sms_0412345678"}
+{"ts":1768074635547,"role":"user","content":"hi","action_id":"20260111-0650-SYSTEM-action"}
+{"ts":1768074677332,"role":"user","content":"show me a test of this new update to the gemo cmd","action_id":"20260111-0651-SYSTEM-show_test_update"}
+{"ts":1768074707606,"role":"user","content":"execute plan","action_id":"20260111-0651-SYSTEM-execute_plan"}
+{"ts":1768074801367,"role":"user","content":"quit","action_id":"20260111-0653-SYSTEM-quit"}
+{"ts":1768074828658,"role":"user","content":"assistant","action_id":"20260111-0653-SYSTEM-assistant"}
+{"ts":1768087057658,"role":"user","content":"run a system check","action_id":"20260111-1017-SYSTEM-run_system_check"}
+{"ts":1768214454277,"role":"user","content":"c","action_id":"20260112-2140-SYSTEM-action"}
+{"ts":1768236035431,"role":"user","content":"hi","action_id":"20260113-0340-SYSTEM-action"}
+{"ts":1768236059597,"role":"user","content":"do yo7 hacw new instructions?","action_id":"20260113-0340-SYSTEM-yo7_hacw_instructions"}
+{"ts":1768236079274,"role":"user","content":"yes i am","action_id":"20260113-0341-SYSTEM-yes"}
+{"ts":1768316255043,"role":"user","content":"provide","action_id":"20260114-0157-SYSTEM-provide"}

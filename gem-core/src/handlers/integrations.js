@@ -393,3 +393,467 @@ export async function highlevel_sync_contacts(input, context = {}) {
     });
   }
 }
+
+// ============================================
+// OUTBOUND SYNC HANDLERS
+// ============================================
+
+/**
+ * integrations.highlevel.sync_inspection - Sync completed inspection to GoHighLevel
+ * Creates a note with inspection summary and moves opportunity to Quoting stage
+ */
+export async function highlevel_sync_inspection(input, context) {
+  const config = highlevelProvider.checkConfiguration();
+  if (!config.configured) {
+    return notConfigured('integrations.highlevel.sync_inspection', {
+      reason: 'HighLevel integration not configured',
+      missing: config.missing
+    });
+  }
+
+  const { inspection_id, lead_id, highlevel_contact_id } = input;
+
+  if (!inspection_id || !highlevel_contact_id) {
+    return success({
+      status: 'error',
+      error: 'Missing required fields: inspection_id and highlevel_contact_id'
+    });
+  }
+
+  try {
+    // Fetch inspection data
+    const { data: inspection, error: inspError } = await supabase
+      .from('inspections')
+      .select('*, leads(*)')
+      .eq('id', inspection_id)
+      .single();
+
+    if (inspError || !inspection) {
+      return success({
+        status: 'error',
+        error: 'Inspection not found'
+      });
+    }
+
+    // Build inspection summary note
+    const defectCount = inspection.defects?.length || 0;
+    const photoCount = inspection.photos?.length || 0;
+    const noteBody = `🏠 **Roof Health Check Completed**
+
+📅 Date: ${new Date(inspection.completed_at || inspection.created_at).toLocaleDateString('en-AU')}
+📍 Address: ${inspection.leads?.address || 'N/A'}
+
+**Summary:**
+- Roof Condition: ${inspection.overall_condition || 'Assessed'}
+- Defects Found: ${defectCount}
+- Photos Taken: ${photoCount}
+
+**Recommendations:**
+${inspection.recommendations || 'See full report for details.'}
+
+---
+_Synced from CKR-Inspections App_`;
+
+    // Create note in GHL
+    const noteResult = await highlevelProvider.createNote(highlevel_contact_id, noteBody);
+
+    if (!noteResult.success) {
+      // Queue for retry
+      await queueSyncRetry('create_note', 'inspection', inspection_id, highlevel_contact_id, {
+        body: noteBody
+      });
+
+      return success({
+        status: 'queued_retry',
+        error: noteResult.error
+      });
+    }
+
+    // Move opportunity to Quoting stage
+    const quotingStageId = 'bbc51746-485d-4703-a78f-c1b5631a241a';
+
+    // Get opportunity for this contact
+    const oppResult = await highlevelProvider.getContactOpportunities(highlevel_contact_id);
+
+    if (oppResult.success && oppResult.data?.opportunities?.length > 0) {
+      const opportunity = oppResult.data.opportunities[0];
+      await highlevelProvider.updateOpportunity(opportunity.id, {
+        pipelineStageId: quotingStageId
+      });
+
+      // Track opportunity sync
+      await supabase
+        .from('highlevel_opportunity_sync')
+        .upsert({
+          highlevel_opportunity_id: opportunity.id,
+          highlevel_contact_id: highlevel_contact_id,
+          ckr_lead_id: lead_id,
+          highlevel_stage_id: quotingStageId,
+          highlevel_stage_name: 'Quoting',
+          sync_status: 'synced',
+          last_sync_at: new Date().toISOString()
+        }, { onConflict: 'highlevel_opportunity_id' });
+    }
+
+    // Track document mapping
+    await supabase
+      .from('highlevel_document_mapping')
+      .upsert({
+        ckr_entity_type: 'inspection',
+        ckr_entity_id: inspection_id,
+        highlevel_contact_id: highlevel_contact_id,
+        highlevel_note_id: noteResult.data?.id,
+        sync_status: 'uploaded',
+        uploaded_at: new Date().toISOString()
+      }, { onConflict: 'ckr_entity_type,ckr_entity_id' });
+
+    return success({
+      status: 'synced',
+      inspection_id,
+      highlevel_contact_id,
+      note_id: noteResult.data?.id,
+      stage_updated: true
+    }, { api_calls: 3 });
+
+  } catch (error) {
+    console.error('highlevel_sync_inspection error:', error);
+    return success({
+      status: 'error',
+      error: 'Sync failed'
+    });
+  }
+}
+
+/**
+ * integrations.highlevel.sync_quote - Sync quote to GoHighLevel
+ * Creates a note with quote details and updates opportunity value
+ */
+export async function highlevel_sync_quote(input, context) {
+  const config = highlevelProvider.checkConfiguration();
+  if (!config.configured) {
+    return notConfigured('integrations.highlevel.sync_quote', {
+      reason: 'HighLevel integration not configured',
+      missing: config.missing
+    });
+  }
+
+  const { quote_id, lead_id, highlevel_contact_id, quote_amount, quote_url } = input;
+
+  if (!quote_id || !highlevel_contact_id) {
+    return success({
+      status: 'error',
+      error: 'Missing required fields: quote_id and highlevel_contact_id'
+    });
+  }
+
+  try {
+    // Build quote note
+    const noteBody = `💰 **Quote Sent**
+
+📅 Date: ${new Date().toLocaleDateString('en-AU')}
+💵 Amount: $${(quote_amount || 0).toLocaleString('en-AU', { minimumFractionDigits: 2 })}
+
+${quote_url ? `📄 View Quote: ${quote_url}` : ''}
+
+---
+_Synced from CKR-Inspections App_`;
+
+    // Create note in GHL
+    const noteResult = await highlevelProvider.createNote(highlevel_contact_id, noteBody);
+
+    // Update opportunity value and move to Follow Up stage
+    const followUpStageId = '17b86090-5bed-4af5-81de-2c88472a3046';
+
+    const oppResult = await highlevelProvider.getContactOpportunities(highlevel_contact_id);
+
+    if (oppResult.success && oppResult.data?.opportunities?.length > 0) {
+      const opportunity = oppResult.data.opportunities[0];
+      await highlevelProvider.updateOpportunity(opportunity.id, {
+        pipelineStageId: followUpStageId,
+        monetaryValue: quote_amount || 0
+      });
+
+      // Create follow-up task (3 days from now)
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + 3);
+
+      await highlevelProvider.createTask(highlevel_contact_id, {
+        title: 'Follow up on quote',
+        body: `Quote for $${(quote_amount || 0).toLocaleString('en-AU')} was sent. Follow up with customer.`,
+        dueDate: dueDate.toISOString()
+      });
+
+      // Track opportunity sync
+      await supabase
+        .from('highlevel_opportunity_sync')
+        .upsert({
+          highlevel_opportunity_id: opportunity.id,
+          highlevel_contact_id: highlevel_contact_id,
+          ckr_lead_id: lead_id,
+          highlevel_stage_id: followUpStageId,
+          highlevel_stage_name: 'Follow Up',
+          highlevel_monetary_value: quote_amount || 0,
+          sync_status: 'synced',
+          last_sync_at: new Date().toISOString()
+        }, { onConflict: 'highlevel_opportunity_id' });
+    }
+
+    // Track document mapping
+    await supabase
+      .from('highlevel_document_mapping')
+      .upsert({
+        ckr_entity_type: 'quote',
+        ckr_entity_id: quote_id,
+        highlevel_contact_id: highlevel_contact_id,
+        highlevel_note_id: noteResult.data?.id,
+        sync_status: 'uploaded',
+        uploaded_at: new Date().toISOString()
+      }, { onConflict: 'ckr_entity_type,ckr_entity_id' });
+
+    return success({
+      status: 'synced',
+      quote_id,
+      highlevel_contact_id,
+      note_id: noteResult.data?.id,
+      task_created: true,
+      stage_updated: true
+    }, { api_calls: 4 });
+
+  } catch (error) {
+    console.error('highlevel_sync_quote error:', error);
+    return success({
+      status: 'error',
+      error: 'Sync failed'
+    });
+  }
+}
+
+/**
+ * integrations.highlevel.update_lead_stage - Update lead stage in GoHighLevel
+ */
+export async function highlevel_update_lead_stage(input, context) {
+  const config = highlevelProvider.checkConfiguration();
+  if (!config.configured) {
+    return notConfigured('integrations.highlevel.update_lead_stage', {
+      reason: 'HighLevel integration not configured',
+      missing: config.missing
+    });
+  }
+
+  const { lead_id, highlevel_contact_id, stage, notes } = input;
+
+  if (!highlevel_contact_id || !stage) {
+    return success({
+      status: 'error',
+      error: 'Missing required fields: highlevel_contact_id and stage'
+    });
+  }
+
+  try {
+    // Look up stage ID from mapping table
+    const { data: stageMapping } = await supabase
+      .from('highlevel_stage_mapping')
+      .select('highlevel_stage_id, highlevel_stage_name')
+      .eq('ckr_lead_status', stage)
+      .eq('auto_sync_outbound', true)
+      .limit(1)
+      .single();
+
+    if (!stageMapping) {
+      return success({
+        status: 'error',
+        error: `No stage mapping found for CKR status: ${stage}`
+      });
+    }
+
+    // Get opportunity for this contact
+    const oppResult = await highlevelProvider.getContactOpportunities(highlevel_contact_id);
+
+    if (!oppResult.success || !oppResult.data?.opportunities?.length) {
+      return success({
+        status: 'error',
+        error: 'No opportunity found for contact'
+      });
+    }
+
+    const opportunity = oppResult.data.opportunities[0];
+
+    // Update opportunity stage
+    const updateResult = await highlevelProvider.updateOpportunity(opportunity.id, {
+      pipelineStageId: stageMapping.highlevel_stage_id
+    });
+
+    if (!updateResult.success) {
+      return success({
+        status: 'error',
+        error: updateResult.error
+      });
+    }
+
+    // Add note if provided
+    if (notes) {
+      await highlevelProvider.createNote(highlevel_contact_id, notes);
+    }
+
+    // Track sync
+    await supabase
+      .from('highlevel_opportunity_sync')
+      .upsert({
+        highlevel_opportunity_id: opportunity.id,
+        highlevel_contact_id: highlevel_contact_id,
+        ckr_lead_id: lead_id,
+        ckr_lead_status: stage,
+        highlevel_stage_id: stageMapping.highlevel_stage_id,
+        highlevel_stage_name: stageMapping.highlevel_stage_name,
+        sync_status: 'synced',
+        last_sync_at: new Date().toISOString()
+      }, { onConflict: 'highlevel_opportunity_id' });
+
+    return success({
+      status: 'synced',
+      highlevel_contact_id,
+      opportunity_id: opportunity.id,
+      new_stage: stageMapping.highlevel_stage_name
+    }, { api_calls: notes ? 3 : 2 });
+
+  } catch (error) {
+    console.error('highlevel_update_lead_stage error:', error);
+    return success({
+      status: 'error',
+      error: 'Stage update failed'
+    });
+  }
+}
+
+/**
+ * Queue a sync operation for retry
+ */
+async function queueSyncRetry(operation, entityType, entityId, contactId, payload) {
+  const nextAttempt = new Date();
+  nextAttempt.setMinutes(nextAttempt.getMinutes() + 5); // Retry in 5 minutes
+
+  await supabase
+    .from('highlevel_sync_queue')
+    .insert({
+      operation,
+      entity_type: entityType,
+      entity_id: entityId,
+      highlevel_contact_id: contactId,
+      payload,
+      status: 'queued',
+      priority: 5,
+      next_attempt_at: nextAttempt.toISOString()
+    });
+}
+
+/**
+ * integrations.highlevel.process_sync_queue - Process pending sync queue items
+ */
+export async function highlevel_process_sync_queue(input, context) {
+  const config = highlevelProvider.checkConfiguration();
+  if (!config.configured) {
+    return notConfigured('integrations.highlevel.process_sync_queue', {
+      reason: 'HighLevel integration not configured',
+      missing: config.missing
+    });
+  }
+
+  const limit = input.limit || 10;
+
+  try {
+    // Get pending items
+    const { data: items, error } = await supabase
+      .from('highlevel_sync_queue')
+      .select('*')
+      .in('status', ['queued', 'failed'])
+      .lt('attempts', 5)
+      .lte('next_attempt_at', new Date().toISOString())
+      .order('priority', { ascending: false })
+      .order('created_at', { ascending: true })
+      .limit(limit);
+
+    if (error || !items?.length) {
+      return success({
+        status: 'ok',
+        processed: 0,
+        message: 'No pending items'
+      });
+    }
+
+    let processed = 0;
+    let succeeded = 0;
+    let failed = 0;
+
+    for (const item of items) {
+      processed++;
+
+      // Mark as processing
+      await supabase
+        .from('highlevel_sync_queue')
+        .update({
+          status: 'processing',
+          last_attempt_at: new Date().toISOString(),
+          attempts: item.attempts + 1
+        })
+        .eq('id', item.id);
+
+      let result;
+
+      try {
+        switch (item.operation) {
+          case 'create_note':
+            result = await highlevelProvider.createNote(item.highlevel_contact_id, item.payload.body);
+            break;
+          case 'update_opportunity':
+            result = await highlevelProvider.updateOpportunity(item.payload.opportunity_id, item.payload.updates);
+            break;
+          case 'create_task':
+            result = await highlevelProvider.createTask(item.highlevel_contact_id, item.payload);
+            break;
+          default:
+            result = { success: false, error: `Unknown operation: ${item.operation}` };
+        }
+      } catch (err) {
+        result = { success: false, error: err.message };
+      }
+
+      if (result.success) {
+        succeeded++;
+        await supabase
+          .from('highlevel_sync_queue')
+          .update({
+            status: 'completed',
+            completed_at: new Date().toISOString()
+          })
+          .eq('id', item.id);
+      } else {
+        failed++;
+        const nextAttempt = new Date();
+        nextAttempt.setMinutes(nextAttempt.getMinutes() + Math.pow(2, item.attempts) * 5); // Exponential backoff
+
+        await supabase
+          .from('highlevel_sync_queue')
+          .update({
+            status: item.attempts + 1 >= 5 ? 'failed' : 'queued',
+            error_message: result.error,
+            next_attempt_at: nextAttempt.toISOString()
+          })
+          .eq('id', item.id);
+      }
+    }
+
+    return success({
+      status: 'ok',
+      processed,
+      succeeded,
+      failed
+    }, { api_calls: processed });
+
+  } catch (error) {
+    console.error('highlevel_process_sync_queue error:', error);
+    return success({
+      status: 'error',
+      error: 'Queue processing failed'
+    });
+  }
+}
